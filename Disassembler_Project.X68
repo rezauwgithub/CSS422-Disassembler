@@ -8,71 +8,127 @@
 START:                  ; first instruction of program
 
 * Put program code here
-    LEA USER_INPUT1,A1
-    MOVE.B  #13,D0
-    TRAP    #15
-    
-    MOVE.B  #4,D0
-    TRAP    #15
-    
-    ADD.W   D4,D5
-    
-    MOVEA.L #$00008000,A0
-    MOVEA.L A0,A1
-    MOVE.L  #$103C0004,(A1)+ *MOVE.B    #4,D0
-    MOVE.L  #$307C5000,(A1)+ *MOVEA.W   #$5000,A0
-    MOVE.W  #$4E71,(A1)+     *NOP
-    
-    MOVEA.L A0,A1
-TESTBIT_ONE
-    MOVE.B  #16,D6
-    MOVE.W  (A1)+,D2
-    ROL.W   #$1,D2
-    SUBI.B   #1,D6
-    BCC     BIT_0
-BIT_1
-
-
-
-
-BIT_0
-    ROL.W   #$1,D2
-    SUBI.B  #1,D6
-    BCC     BIT_0_0
-BIT_0_1
-    
+    MOVE.B  D7,D0
+    MOVE.W  D7,D0
+    MOVE.L  D7,D0
+    ADD.B   #$FF,D3
+    MOVEA.L #$6000,A0
+    MOVEA.L A0,A2
+    MOVE.W  #$1007,(A2)+
+    MOVE.W  #$3007,(A2)+
+    MOVE.W  #$2007,(A2)+
+    MOVE.L  #$060300FF,(A2)+
+    MOVE.W  #$4E71,(A2)+
     
     
 
-BIT_0_0
-    ROL.W   #$1,D2
-    SUBI.B  #1,D6
-    BCC     BIT_0_0_0
-BIT_0_0_1
-    BRA MOVEOP
-    
-    
-    
-BIT_0_0_0
-    ROL.W   #$1,D2
-    SUBI.B  #1,D6
-    BCC     BIT_0_0_0_0
-BIT_0_0_0_1
-    
-    
-    
-BIT_0_0_0_0
-     
-    
-    
-
-
-MOVEOP
+    MOVEA.L A0,A2
+    ;BEGIN TESTING DISASSEMBLER
+TESTLOOP
+    MOVE.B  (A2),D2
+    LSR.L   #$4,D2
+                
         
+        ;NOP/MOVEM/LEA/CLR/JSR/RTS    
+;----------------------    
+    CMP.L   #$4,D2
+    JSR     NOP_MOVEM_LEA_CLR_JSR_RTS_
+;----------------------
+
+        ;MOVE/MOVEA    
+;----------------------    
+    CMP.L   #$1,D2
+    JSR     MOVE_MOVEA_
+    CMP.L   #$2,D2
+    JSR     MOVE_MOVEA_
+    CMP.L   #$3,D2
+    JSR     MOVE_MOVEA_
+;----------------------
+
+        ;MOVEQ    
+;----------------------    
+    CMP.L   #$7,D2
+    JSR     MOVEQ_
+;----------------------
+
+        ;ADD/ADDA    
+;----------------------    
+    CMP.L   #$D,D2
+    JSR     ADD_ADDA_
+;----------------------
+
+        ;ADDI   
+;----------------------    
+    CMP.L   #$0,D2
+    JSR     ADDI_
+;----------------------
+      
+        ;ADDQ    
+;----------------------    
+    CMP.L   #$5,D2
+    JSR     ADDQ_
+;----------------------
     
-    
-    
-    
+        ;SUB    
+;----------------------    
+    CMP.L   #$9,D2
+    JSR     SUB_
+;----------------------
+
+        ;MULS_AND    
+;----------------------    
+    CMP.L   #$C,D2
+    JSR     MULS_AND_
+;----------------------
+
+        ;OR_DIVU    
+;----------------------    
+    CMP.L   #$8,D2
+    JSR     SUB_
+;----------------------
+
+        ;LSd_ASd_ROd    
+;----------------------    
+    CMP.L   #$E,D2
+    JSR     LSd_ASd_ROd_
+;----------------------
+
+        ;CMP   
+;----------------------    
+    CMP.L   #$B,D2
+    JSR     CMP_
+;----------------------
+
+        ;BCC   
+;----------------------    
+    CMP.L   #$6,D2
+    JSR     BCC_
+;----------------------
+
+NOP_MOVEM_LEA_CLR_JSR_RTS_   
+    RTS
+MOVE_MOVEA_
+    RTS
+MOVEQ_
+    RTS
+ADD_ADDA_
+    RTS
+ADDI_
+    RTS
+ADDQ_
+    RTS
+SUB_
+    RTS
+MULS_AND_
+    RTS
+OR_DIVU_
+    RTS
+LSd_ASd_ROd_
+    RTS
+CMP_
+    RTS
+BCC_
+    RTS
     SIMHALT             ; halt simulator
 
 * Put variables and constants here
@@ -158,11 +214,8 @@ A7_IN_POST  DC.B    '(A7)+',0
 
 
 
-
-
-
-
     END    START        ; last line of source
+
 
 *~Font name~Courier New~
 *~Font size~10~
