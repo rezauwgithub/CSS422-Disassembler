@@ -7,6 +7,12 @@
     ORG    $1000
 START:                  ; first instruction of program
 
+* for testing get_bitX_X functions
+    move.w #$0114,D3
+    jmp MOVE_MOVEA_
+    
+
+
 * Put program code here
     MOVE.B  D7,D0
     MOVE.W  D7,D0
@@ -108,7 +114,21 @@ TESTLOOP
 NOP_MOVEM_LEA_CLR_JSR_RTS_   
     RTS
 MOVE_MOVEA_
+    * get source register // NOT WORKING: need to figure out branching
+    bsr     get_bits0_2     * get register #
+    move.b  D4,D5           * store register #
+    bsr     get_bits3_5     * get mode
+    *cmp.b   #$00,D4         * check if data or address register   
+    *bsr     get_Dregister   * get cString
+    *cmp.b   #$00,D4 
+    jsr     get_Aregister    
+    jsr     get_mode        * get mode and print
+    jmp     STOP
+
+
+    * done? 
     RTS
+    
 MOVEQ_
     RTS
 ADD_ADDA_
@@ -129,11 +149,264 @@ CMP_
     RTS
 BCC_
     RTS
+
+* ---------------------   
+*** move bits to D4 ***
+* --------------------- 
+* get next 1 bit ** I think this is useless - Confirm/Delete? **
+next_1bit
+        move.w  D3,D4
+        lsr.w   #8,D4
+        lsr.w   #7,D4
+        RTS
+        
+* get mext 2 bits ** I think this is useless - Confirm/Delete? **
+next_2bit
+        move.w  D3,D4
+        lsr.w   #8,D4
+        lsr.w   #6,D4
+        RTS
+
+* get next 3 bits ** I think this is useless - Confirm/Delete? **
+next_3bit
+        move.w  D3,D4
+        lsr.w   #8,D4
+        lsr.w   #5,D4
+        RTS
+        
+* ----------------------        
+* * Get Specified Bits *
+* ---------------------- 
+get_bits0_2
+        move.w  D3,D4
+        lsl.w   #8,D4
+        lsl.w   #5,D4
+        lsr.w   #5,D4
+        lsr.w   #8,D4
+        RTS
+        
+get_bits3_5
+        move.w  D3,D4
+        lsl.w   #8,D4
+        lsl.w   #2,D4
+        lsr.w   #5,D4
+        lsr.w   #8,D4
+        RTS
+        
+get_bits6_8
+        move.w  D3,D4
+        lsl.w   #7,D4
+        lsr.w   #5,D4
+        lsr.w   #8,D4
+        RTS
+        
+get_bits9_11
+        move.w  D3,D4
+        lsl.w   #4,D4
+        lsr.w   #8,D4
+        lsr.w   #5,D4
+        RTS
+        
+* ---------------------
+* get Address Register 
+* ---------------------
+* 3 bits should be in D4
+get_Aregister
+    cmp.b   #0,D5
+    beq     load_A0_REG
+    cmp.b   #1,D5
+    beq     load_A1_REG 
+    cmp.b   #2,D5
+    beq     load_A2_REG
+    cmp.b   #3,D5
+    beq     load_A3_REG
+    cmp.b   #4,D5
+    beq     load_A4_REG   
+    cmp.b   #5,D5
+    beq     load_A5_REG   
+    cmp.b   #6,D5
+    beq     load_A6_REG   
+    cmp.b   #7,D5
+    beq     load_A7_REG
+    
+    RTS 
+* ---------------------    
+* * get Data Register *
+* ---------------------
+* 3 bits should be in D4
+get_Dregister
+    cmp.b   #0,D5
+    beq     load_D0_REG
+    cmp.b   #1,D5
+    beq     load_D1_REG    
+    cmp.b   #2,D5
+    beq     load_D2_REG
+    cmp.b   #3,D5
+    beq     load_D3_REG
+    cmp.b   #4,D5
+    beq     load_D4_REG  
+    cmp.b   #5,D5
+    beq     load_D5_REG 
+    cmp.b   #6,D5
+    beq     load_D6_REG   
+    cmp.b   #7,D5
+    beq     load_D7_REG
+   
+    RTS
+         
+* ----------------------
+* * get Mode and print *
+* ----------------------
+* 3 bits should be in D4
+get_mode
+
+    *cmp.b   #1,D4
+    *jsr     show_error     
+    cmp.b   #2,D4
+    beq     effective_address
+    cmp.b   #3,D4
+    beq     effective_address_increment
+    cmp.b   #4,D4
+    beq     effective_address_decrement
+    *cmp.b   #5,D4
+    *jsr     (d16,An) do we need to do this?
+    *cmp.b   #6,D4
+    *jsr     (d16,An,Xn) do we need to do this?      
+    
+    RTS
+    
+* --------------------    
+* ** Print Register **
+* --------------------
+* printing scenarios for addressing/mode
+effective_address
+    lea         PAREN_OPEN,A1
+    move.b      #14,D0          * print '('
+    trap        #15
+    
+    lea         (A2),A1
+    move.b      #14,D0          * print register
+    trap        #15
+    
+    lea         PAREN_CLOSE,A1
+    move.b      #14,D0          * print ')'
+    trap        #15
+    
+    RTS
+    
+effective_address_increment
+    lea         PAREN_OPEN,A1
+    move.b      #14,D0          * print '('
+    trap        #15
+    
+    lea         (A2),A1
+    move.b      #14,D0          * print register
+    trap        #15
+    
+    lea         PAREN_CLOSE,A1
+    move.b      #14,D0          * print ')'
+    trap        #15
+    
+    lea         PLUS,A1
+    move.b      #14,D0          * print '+'
+    trap        #15
+    
+    RTS
+
+effective_address_decrement
+    lea         MINUS,A1
+    move.b      #14,D0          * print '-'
+    trap        #15
+   
+    lea         PAREN_OPEN,A1
+    move.b      #14,D0          * print '('
+    trap        #15
+    
+    lea         (A2),A1
+    move.b      #14,D0          * print register
+    trap        #15  
+     
+    lea         PAREN_CLOSE,A1
+    move.b      #14,D0          * print ')'
+    trap        #15
+
+    RTS
+    
+* -------------------------
+* * Load register cString *
+* -------------------------
+* store register cString in A2 for printing
+load_A0_REG
+    lea     A0_REG,A2
+    RTS
+load_A1_REG
+    lea     A1_REG,A2  
+    RTS
+load_A2_REG
+    lea     A2_REG,A2
+    RTS
+load_A3_REG
+    lea     A3_REG,A2
+    RTS
+load_A4_REG
+    lea     A4_REG,A2
+    RTS
+load_A5_REG   
+    lea     A5_REG,A2
+    RTS
+load_A6_REG   
+    lea     A6_REG,A2
+    RTS
+load_A7_REG   
+    lea     A7_REG,A2
+    RTS
+    
+load_D0_REG
+    lea     D0_REG,A2
+    RTS
+load_D1_REG
+    lea     D1_REG,A2  
+    RTS
+load_D2_REG
+    lea     D2_REG,A2
+    RTS
+load_D3_REG
+    lea     D3_REG,A2
+    RTS
+load_D4_REG
+    lea     D4_REG,A2
+    RTS
+load_D5_REG   
+    lea     D5_REG,A2
+    RTS
+load_D6_REG   
+    lea     D6_REG,A2
+    RTS
+load_D7_REG   
+    lea     D7_REG,A2
+    RTS
+  
+* *********************
+* ---------------------
+* throw error
+show_error
+    lea     ERROR,A1
+    move.b  #14,D0
+    trap    #15
+    bra     TESTLOOP       
+
+
+STOP
     SIMHALT             ; halt simulator
 
 * Put variables and constants here
 USER_INPUT1  DC.B    'Please specify beginning address',0
 USER_INPUT2  DC.B    'Please specify ending address',0
+*----------------------------------------------------------
+PLUS        DC.B    '+',0
+MINUS       DC.B    '-',0
+PAREN_OPEN  DC.B    '(',0
+PAREN_CLOSE DC.B    ')',0
 *--------------------OPCODES-------------------------------
 NOP_OP      DC.B    'NOP',0
 MOVE_OP     DC.B    'MOVE',0
@@ -211,10 +484,15 @@ A4_IN_POST  DC.B    '(A4)+',0
 A5_IN_POST  DC.B    '(A5)+',0
 A6_IN_POST  DC.B    '(A6)+',0
 A7_IN_POST  DC.B    '(A7)+',0
+*ERROR
+ERROR       DC.B    'Something went wrong. Derp',0
 
 
 
     END    START        ; last line of source
+
+
+
 
 
 *~Font name~Courier New~
