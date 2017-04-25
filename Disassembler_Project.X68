@@ -8,7 +8,7 @@
 START:                  ; first instruction of program
 
 * for testing get_bitX_X functions
-    move.w #$0114,D3
+    move.w #$3636,D3
     jmp MOVE_MOVEA_
     
 
@@ -114,16 +114,38 @@ TESTLOOP
 NOP_MOVEM_LEA_CLR_JSR_RTS_   
     RTS
 MOVE_MOVEA_
-    * get source register // NOT WORKING: need to figure out branching
+        
+    
+    *                                                   OUTPUT SEQUENCE
+    *                                                   brackets [] show added portion
+    *                                                   
+    * print Op-code                                     [MOVE(A)]
+    bsr     get_bits3_5     * get mode                      
+    bsr     move_or_movea   * print MOVE or MOVEA
+    
+    * print length
+    bsr     get_bits12_13
+    bsr     print_length     * print length (.L.W.B)
+    
+    * print source                                      MOVE(A) [Xn]
     bsr     get_bits0_2     * get register #
-    move.b  D4,D5           * store register #
-    bsr     get_bits3_5     * get mode
-    *cmp.b   #$00,D4         * check if data or address register   
-    *bsr     get_Dregister   * get cString
-    *cmp.b   #$00,D4 
-    jsr     get_Aregister    
-    jsr     get_mode        * get mode and print
-    jmp     STOP
+    move.b  D4,D5           * store register # (0-7)
+    bsr     get_bits3_5
+    bsr     register_type   * get and store 
+    bsr     print_source    * register type (D or A)
+    
+    * print separating comma                            MOVE(A) Xn [, ]
+    bsr     print_comma
+    
+    *print destination                                  MOVE(A) Xn, [Xn]   
+    bsr     get_bits9_11     * get register #
+    move.b  D4,D5           * store register # (0-7)    
+    bsr     get_bits6_8
+    bsr     register_type   * get and store 
+    bsr     print_source    * register type (D or A)
+    
+    *                                                   MOVE(A) Xn, Xn
+    jmp     STOP        *                               el fin
 
 
     * done? 
@@ -206,11 +228,75 @@ get_bits9_11
         lsr.w   #8,D4
         lsr.w   #5,D4
         RTS
-        
+
+get_bits12_13
+        move.w  D3,D4
+        lsl.w   #2,D4
+        lsr.w   #8,D4
+        lsr.w   #7,D4
+        RTS
+* -----------------------
+* **** MOVE or MOVEA ****
+* -----------------------
+move_or_movea
+    cmp.b   #$01,D4
+    beq     print_moveA
+    bra     print_move
+    
+print_moveA
+    lea         MOVEA_OP,A1
+    move.b      #14,D0          
+    trap        #15    
+    RTS
+    
+print_move
+    lea         MOVE_OP,A1
+    move.b      #14,D0         
+    trap        #15
+    RTS
+    
+* ----------------------------
+* print length (.B | .W | .L) 
+* ----------------------------
+print_length
+    cmp.b   #$01,D4
+    beq     print_B
+    cmp.b   #$03,D4
+    beq     print_W
+    cmp.b   #$02,D4
+    beq     print_L
+    bra     show_error
+    
+print_B
+    lea         BYTE_SIZE,A1
+    move.b      #14,D0          
+    trap        #15    
+    RTS
+    
+print_W
+    lea         WORD_SIZE,A1
+    move.b      #14,D0         
+    trap        #15
+    RTS 
+
+print_L
+    lea         LONG_SIZE,A1
+    move.b      #14,D0         
+    trap        #15
+    RTS 
+     
 * ---------------------
-* get Address Register 
+* * get Register type *
 * ---------------------
 * 3 bits should be in D4
+register_type
+    cmp.b   #$00,D4
+    beq     get_Dregister
+    cmp.b   #$07,D4
+    beq     get_immidiate
+    
+    bra     get_Aregister    
+
 get_Aregister
     cmp.b   #0,D5
     beq     load_A0_REG
@@ -230,10 +316,7 @@ get_Aregister
     beq     load_A7_REG
     
     RTS 
-* ---------------------    
-* * get Data Register *
-* ---------------------
-* 3 bits should be in D4
+
 get_Dregister
     cmp.b   #0,D5
     beq     load_D0_REG
@@ -253,32 +336,39 @@ get_Dregister
     beq     load_D7_REG
    
     RTS
+    
+get_immidiate   *||* TO DO *||*
+    RTS
          
-* ----------------------
-* * get Mode and print *
-* ----------------------
+* ----------------------------------
+* **** Print Source/Destination ****
+* ----------------------------------
 * 3 bits should be in D4
-get_mode
+print_source
 
-    *cmp.b   #1,D4
-    *jsr     show_error     
+    cmp.b   #0,D4
+    beq     data_register
+    cmp.b   #1,D4
+    beq     show_error     
     cmp.b   #2,D4
     beq     effective_address
     cmp.b   #3,D4
     beq     effective_address_increment
     cmp.b   #4,D4
     beq     effective_address_decrement
-    *cmp.b   #5,D4
-    *jsr     (d16,An) do we need to do this?
-    *cmp.b   #6,D4
-    *jsr     (d16,An,Xn) do we need to do this?      
+    cmp.b   #5,D4
+    beq     effective_address *(d16,An) do we need to do this?
+    cmp.b   #6,D4
+    beq     effective_address *(d16,An,Xn) do we need to do this?      
     
     RTS
     
-* --------------------    
-* ** Print Register **
-* --------------------
-* printing scenarios for addressing/mode
+data_register
+    lea         (A2),A1
+    move.b      #14,D0          * print register
+    trap        #15
+    RTS
+    
 effective_address
     lea         PAREN_OPEN,A1
     move.b      #14,D0          * print '('
@@ -385,10 +475,24 @@ load_D6_REG
 load_D7_REG   
     lea     D7_REG,A2
     RTS
+
+* --------------------
+* * Print comma ', ' *
+* --------------------
+print_comma
+    lea     COMMA,A1
+    move.b  #14,D0
+    trap    #15
+    RTS
+
+**********************
+****** ERRORS ********
+**********************
+
   
-* *********************
-* ---------------------
-* throw error
+* --------------------
+* **** Show Error ****      // TO DO: Come up with more descriptive errors
+* --------------------
 show_error
     lea     ERROR,A1
     move.b  #14,D0
@@ -407,6 +511,7 @@ PLUS        DC.B    '+',0
 MINUS       DC.B    '-',0
 PAREN_OPEN  DC.B    '(',0
 PAREN_CLOSE DC.B    ')',0
+COMMA       DC.B    ', ',0
 *--------------------OPCODES-------------------------------
 NOP_OP      DC.B    'NOP',0
 MOVE_OP     DC.B    'MOVE',0
@@ -435,9 +540,9 @@ BCC_OP      DC.B    'BCC',0
 JSR_OP      DC.B    'JSR',0
 RTS_OP      DC.B    'RTS',0
 *-------------------SIZE OF OP-----------------------------
-BYTE_SIZE   DC.B    '.B',0
-WORD_SIZE   DC.B    '.W',0
-LONG_SIZE   DC.B    '.L',0
+BYTE_SIZE   DC.B    '.B ',0
+WORD_SIZE   DC.B    '.W ',0
+LONG_SIZE   DC.B    '.L ',0
 *--------------------REGISTERS-----------------------------
 *ADDRESS REGISTERS...
 A0_REG      DC.B    'A0',0
