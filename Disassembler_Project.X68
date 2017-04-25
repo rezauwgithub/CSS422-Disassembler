@@ -5,12 +5,21 @@
 * Description:
 *-----------------------------------------------------------
     ORG    $1000
-START:                  ; first instruction of program
+START:
+
+CR          EQU $0D
+LF          EQU $0A 
+                 
+ADDR_START  EQU $1002
+ADDR_END    EQU $1003
+ADDR_ITR
 
 * for testing get_bitX_X functions
-    move.w #$3636,D3
-    jmp MOVE_MOVEA_
-    
+TEST1   move.w  #$363C,D3
+        bsr     MOVE_MOVEA_
+        bsr     STOP
+
+            
 
 
 * Put program code here
@@ -142,13 +151,10 @@ MOVE_MOVEA_
     move.b  D4,D5           * store register # (0-7)    
     bsr     get_bits6_8
     bsr     register_type   * get and store 
-    bsr     print_source    * register type (D or A)
-    
+    bsr     print_source    * register type (D or A)    
     *                                                   MOVE(A) Xn, Xn
-    jmp     STOP        *                               el fin
-
-
-    * done? 
+    *                                                   el fin
+    bsr     print_new_line
     RTS
     
 MOVEQ_
@@ -233,8 +239,9 @@ get_bits12_13
         move.w  D3,D4
         lsl.w   #2,D4
         lsr.w   #8,D4
-        lsr.w   #7,D4
+        lsr.w   #6,D4
         RTS
+        
 * -----------------------
 * **** MOVE or MOVEA ****
 * -----------------------
@@ -337,7 +344,9 @@ get_Dregister
    
     RTS
     
-get_immidiate   *||* TO DO *||*
+   
+get_immidiate   
+    move.l  (ADDR_START),D5  * get immidiate long   
     RTS
          
 * ----------------------------------
@@ -359,7 +368,9 @@ print_source
     cmp.b   #5,D4
     beq     effective_address *(d16,An) do we need to do this?
     cmp.b   #6,D4
-    beq     effective_address *(d16,An,Xn) do we need to do this?      
+    beq     effective_address *(d16,An,Xn) do we need to do this?  
+    cmp.b   #7,D4
+    beq     print_immidiate     
     
     RTS
     
@@ -421,7 +432,42 @@ effective_address_decrement
     trap        #15
 
     RTS
+ 
+print_immidiate     * determine size of immidiate data
+    move.b  #16,D2
+    move.b  #15,D0
+    bsr     get_bits12_13
+    cmp.b   #$01,D4
+    beq     print_immidiate_B
+    cmp.b   #$03,D4
+    beq     print_immidiate_W
+    cmp.b   #$02,D4
+    beq     print_immidiate_L
+    bra     show_error
+  
+print_immidiate_B   * print immidiate Byte
+    lsr.l   #8,D5
+    lsr.l   #8,D5
+    lsr.l   #8,D5
+
+    move.l  D5,D1    
+    trap    #15
+    RTS    
+
+print_immidiate_W   * print immidiate Word
+    lsr.l   #8,D5
+    lsr.l   #8,D5
+
+    move.l  D5,D1    
+    trap    #15 
+    RTS
     
+print_immidiate_L   * print immidiate Long
+    move.l  D5,D1    
+    trap    #15  
+    RTS
+    
+  
 * -------------------------
 * * Load register cString *
 * -------------------------
@@ -484,6 +530,15 @@ print_comma
     move.b  #14,D0
     trap    #15
     RTS
+    
+* ------------------
+* * Print new line *
+* ------------------
+print_new_line
+    lea     NEW_LINE,A1
+    move.b  #14,D0
+    trap    #15
+    RTS
 
 **********************
 ****** ERRORS ********
@@ -512,6 +567,7 @@ MINUS       DC.B    '-',0
 PAREN_OPEN  DC.B    '(',0
 PAREN_CLOSE DC.B    ')',0
 COMMA       DC.B    ', ',0
+NEW_LINE    DC.B    ' ',CR,LF,0
 *--------------------OPCODES-------------------------------
 NOP_OP      DC.B    'NOP',0
 MOVE_OP     DC.B    'MOVE',0
