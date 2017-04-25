@@ -122,15 +122,13 @@ TESTLOOP
 
 NOP_MOVEM_LEA_CLR_JSR_RTS_   
     RTS
-MOVE_MOVEA_
-        
     
-    *                                                   OUTPUT SEQUENCE
-    *                                                   brackets [] show added portion
-    *                                                   
-    * print Op-code                                     [MOVE(A)]
-    bsr     get_bits3_5     * get mode                      
-    bsr     move_or_movea   * print MOVE or MOVEA
+**************************************************************************************    
+MOVE_MOVEA_
+                                                       
+    * print Op-code                                     OUTPUT SEQUENCE
+    bsr     get_bits3_5     * get mode                  brackets [] show added portion   
+    bsr     move_or_movea   * print MOVE or MOVEA       [MOVE(A)]
     
     * print length
     bsr     get_bits12_13
@@ -146,17 +144,18 @@ MOVE_MOVEA_
     * print separating comma                            MOVE(A) Xn [, ]
     bsr     print_comma
     
-    *print destination                                  MOVE(A) Xn, [Xn]   
-    bsr     get_bits9_11     * get register #
+    * print destination                                  MOVE(A) Xn, [Xn]   
+    bsr     get_bits9_11    * get register #
     move.b  D4,D5           * store register # (0-7)    
     bsr     get_bits6_8
     bsr     register_type   * get and store 
-    bsr     print_source    * register type (D or A)    
-    *                                                   MOVE(A) Xn, Xn
-    *                                                   el fin
+    bsr     print_source    * register type (D or A)    MOVE(A) Xn, Xn
+    
+    * start new line when finished                                                   
     bsr     print_new_line
     RTS
     
+***************************************************************************************    
 MOVEQ_
     RTS
 ADD_ADDA_
@@ -434,6 +433,9 @@ effective_address_decrement
     RTS
  
 print_immidiate     * determine size of immidiate data
+    
+    bsr     print_hashtag
+    bsr     print_dollar
     move.b  #16,D2
     move.b  #15,D0
     bsr     get_bits12_13
@@ -531,6 +533,24 @@ print_comma
     trap    #15
     RTS
     
+* ---------------------
+* ** Print hashtag # **
+* ---------------------
+print_hashtag
+    lea     HASHTAG,A1
+    move.b  #14,D0
+    trap    #15
+    RTS
+    
+* ---------------------
+* ** Print dollar $ **
+* ---------------------
+print_dollar
+    lea     DOLLAR,A1
+    move.b  #14,D0
+    trap    #15
+    RTS
+    
 * ------------------
 * * Print new line *
 * ------------------
@@ -562,6 +582,8 @@ STOP
 USER_INPUT1  DC.B    'Please specify beginning address',0
 USER_INPUT2  DC.B    'Please specify ending address',0
 *----------------------------------------------------------
+DOLLAR      DC.B    '$',0
+HASHTAG     DC.B    '#',0
 PLUS        DC.B    '+',0
 MINUS       DC.B    '-',0
 PAREN_OPEN  DC.B    '(',0
@@ -651,6 +673,7 @@ ERROR       DC.B    'Something went wrong. Derp',0
 
 
     END    START        ; last line of source
+
 
 
 
