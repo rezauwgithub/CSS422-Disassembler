@@ -14,7 +14,7 @@ ADDR_START  EQU $1002
 ADDR_END    EQU $1003
 ADDR_ITR
 
-* for testing get_bitX_X functions
+* Test MOVE_MOVEA_
 TEST1   move.w  #$363C,D3
         bsr     MOVE_MOVEA_
         bsr     STOP
