@@ -128,29 +128,29 @@ MOVE_MOVEA_
                                                        
     * print Op-code                                     OUTPUT SEQUENCE
     bsr     get_bits3_5     * get mode                  brackets [] show added portion   
-    bsr     move_or_movea   * print MOVE or MOVEA       [MOVE(A)]
-    
-    * print length
+    bsr     move_or_movea   * print MOVE or MOVEA      
+                            *                               1. [MOVE(A)]
+    * print length                                          
     bsr     get_bits12_13
     bsr     print_length     * print length (.L.W.B)
     
-    * print source                                      MOVE(A) [Xn]
+    * print source                                          2. MOVE(A) [Xn]
     bsr     get_bits0_2     * get register #
     move.b  D4,D5           * store register # (0-7)
     bsr     get_bits3_5
     bsr     register_type   * get and store 
     bsr     print_source    * register type (D or A)
     
-    * print separating comma                            MOVE(A) Xn [, ]
+    * print separating comma                                3. MOVE(A) Xn [, ]
     bsr     print_comma
     
-    * print destination                                  MOVE(A) Xn, [Xn]   
+    * print destination                                     4. MOVE(A) Xn, [Xn]   
     bsr     get_bits9_11    * get register #
     move.b  D4,D5           * store register # (0-7)    
     bsr     get_bits6_8
-    bsr     register_type   * get and store 
-    bsr     print_source    * register type (D or A)    MOVE(A) Xn, Xn
-    
+    bsr     register_type   * get and store                 5. MOVE(A) Xn, Xn
+    bsr     print_source    * register type (D or A)       
+                                                                ** DONE **
     * start new line when finished                                                   
     bsr     print_new_line
     RTS
@@ -204,6 +204,7 @@ next_3bit
 * ----------------------        
 * * Get Specified Bits *
 * ---------------------- 
+* put bits in D4 register
 get_bits0_2
         move.w  D3,D4
         lsl.w   #8,D4
@@ -261,35 +262,7 @@ print_move
     trap        #15
     RTS
     
-* ----------------------------
-* print length (.B | .W | .L) 
-* ----------------------------
-print_length
-    cmp.b   #$01,D4
-    beq     print_B
-    cmp.b   #$03,D4
-    beq     print_W
-    cmp.b   #$02,D4
-    beq     print_L
-    bra     show_error
-    
-print_B
-    lea         BYTE_SIZE,A1
-    move.b      #14,D0          
-    trap        #15    
-    RTS
-    
-print_W
-    lea         WORD_SIZE,A1
-    move.b      #14,D0         
-    trap        #15
-    RTS 
 
-print_L
-    lea         LONG_SIZE,A1
-    move.b      #14,D0         
-    trap        #15
-    RTS 
      
 * ---------------------
 * * get Register type *
@@ -523,7 +496,37 @@ load_D6_REG
 load_D7_REG   
     lea     D7_REG,A2
     RTS
+    
+* ----------------------------
+* print length (.B | .W | .L) 
+* ----------------------------
+print_length
+    cmp.b   #$01,D4
+    beq     print_B
+    cmp.b   #$03,D4
+    beq     print_W
+    cmp.b   #$02,D4
+    beq     print_L
+    bra     show_error
+    
+print_B
+    lea         BYTE_SIZE,A1
+    move.b      #14,D0          
+    trap        #15    
+    RTS
+    
+print_W
+    lea         WORD_SIZE,A1
+    move.b      #14,D0         
+    trap        #15
+    RTS 
 
+print_L
+    lea         LONG_SIZE,A1
+    move.b      #14,D0         
+    trap        #15
+    RTS 
+    
 * --------------------
 * * Print comma ', ' *
 * --------------------
@@ -673,6 +676,7 @@ ERROR       DC.B    'Something went wrong. Derp',0
 
 
     END    START        ; last line of source
+
 
 
 
