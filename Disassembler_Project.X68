@@ -6,21 +6,29 @@
 *-----------------------------------------------------------
     ORG    $1000
 START:
-
+                                        ;CONSTANTS
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
 CR          EQU $0D
 LF          EQU $0A 
                  
 ADDR_START  EQU $1002
 ADDR_END    EQU $1003
 ADDR_ITR
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
 
+
+
+
+
+                                        ;TEST CODE        
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
 * Test MOVE_MOVEA_
 TEST1   move.w  #$363C,D3
         bsr     MOVE_MOVEA_
-        bsr     STOP
-
-            
-
+        bsr     STOP   
 
 * Put program code here
     MOVE.B  D7,D0
@@ -37,11 +45,18 @@ TEST1   move.w  #$363C,D3
     
     
 
-    MOVEA.L A0,A2
-    ;BEGIN TESTING DISASSEMBLER
+    MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+
+
+
+
+                                        ;DETERMINE OPCODE
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
 TESTLOOP
-    MOVE.B  (A2),D2
-    LSR.L   #$4,D2
+    JSR ROTATEBYTE
                 
         
         ;NOP/MOVEM/LEA/CLR/JSR/RTS    
@@ -120,42 +135,87 @@ TESTLOOP
     JSR     BCC_
 ;----------------------
 
+
+        ;FAIL 
+;----------------------    
+    LEA ERROR,A1
+    MOVE.B  #13,D0
+    TRAP    #15
+    BRA     MOVENEXT
+;----------------------
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+    SIMHALT             ; halt simulator
+    
+    
+    
+    
+    
+    
+                                        ;OPCODE SUBROUTINES   
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************    
+ROTATEBYTE
+    MOVE.B  (A2),D2
+    LSR.L   #$4,D2
+    RTS
+MOVENEXT
+    ADDA.L  #$2,A2
+    JMP     TESTLOOP
+
 NOP_MOVEM_LEA_CLR_JSR_RTS_   
     RTS
-    
-**************************************************************************************    
+      
 MOVE_MOVEA_
-                                                       
-    * print Op-code                                     OUTPUT SEQUENCE
-    bsr     get_bits3_5     * get mode                  brackets [] show added portion   
-    bsr     move_or_movea   * print MOVE or MOVEA      
-                            *                               1. [MOVE(A)]
-    * print length                                          
-    bsr     get_bits12_13
-    bsr     print_length     * print length (.L.W.B)
+    MOVE.B  (A2),D2
+    JSR     S1
+    JSR     LOAD_SIZE
+    CLR.L   D2
     
-    * print source                                          2. MOVE(A) [Xn]
-    bsr     get_bits0_2     * get register #
-    move.b  D4,D5           * store register # (0-7)
-    bsr     get_bits3_5
-    bsr     register_type   * get and store 
-    bsr     print_source    * register type (D or A)
+    JSR     XN
+    MOVE.B  D2,D3
+    CLR.L   D2
     
-    * print separating comma                                3. MOVE(A) Xn [, ]
-    bsr     print_comma
+    MOVE.W  (A2),D4
+    LSR.W   #$1,D4
+    MOVE.B  D2
+    JSR     MO
+    JSR     
     
-    * print destination                                     4. MOVE(A) Xn, [Xn]   
-    bsr     get_bits9_11    * get register #
-    move.b  D4,D5           * store register # (0-7)    
-    bsr     get_bits6_8
-    bsr     register_type   * get and store                 5. MOVE(A) Xn, Xn
-    bsr     print_source    * register type (D or A)       
-                                                                ** DONE **
-    * start new line when finished                                                   
-    bsr     print_new_line
+    
+    
+    
+
+*    * print Op-code                                     OUTPUT SEQUENCE
+*    bsr     get_bits3_5     * get mode                  brackets [] show added portion   
+*    bsr     move_or_movea   * print MOVE or MOVEA      
+*                            *                               1. [MOVE(A)]
+*    * print length                                          
+*    bsr     get_bits12_13
+*    bsr     print_length     * print length (.L.W.B)
+*    
+*    * print source                                          2. MOVE(A) [Xn]
+*    bsr     get_bits0_2     * get register #
+*    move.b  D4,D5           * store register # (0-7)
+*    bsr     get_bits3_5
+*    bsr     register_type   * get and store 
+*    bsr     print_source    * register type (D or A)
+*    
+*    * print separating comma                                3. MOVE(A) Xn [, ]
+*    bsr     print_comma
+*    
+*    * print destination                                     4. MOVE(A) Xn, [Xn]   
+*    bsr     get_bits9_11    * get register #
+*    move.b  D4,D5           * store register # (0-7)    
+*    bsr     get_bits6_8
+*    bsr     register_type   * get and store                 5. MOVE(A) Xn, Xn
+*    bsr     print_source    * register type (D or A)       
+*                                                                ** DONE **
+*    * start new line when finished                                                   
+*    bsr     print_new_line
     RTS
     
-***************************************************************************************    
+   
 MOVEQ_
     RTS
 ADD_ADDA_
@@ -176,7 +236,77 @@ CMP_
     RTS
 BCC_
     RTS
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
 
+
+
+
+                                          ;MODULAR SUBROUTINES
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+MO
+    LSR.B   #$5,D2
+    RTS
+XN
+    LSL.B   #$4,D2
+    LSR.B   #$5,D2
+    RTS
+S1          ;MOVE
+    LSR.B   #$4,D2
+    RTS
+S2          ;ADD
+    RTS
+S3          ;MOVEM
+    RTS
+D1          ;ADD
+    RTS
+D2          ;MOVEM
+    RTS
+D3          ;SHIFTS
+    RTS
+    
+;----------------------------------------------------------------   
+LOAD_SIZE
+    CMP.B   #$1,D2
+    BEQ     LOAD_BYTE
+    CMP.B   #$3,D2
+    BEQ     LOAD_WORD
+    CMP.B   #$2,D2
+    BEQ     LOAD_LONG
+
+DONE
+    RTS
+
+
+
+LOAD_BYTE
+    MOVE.L  BYTE_SIZE,SIZE
+    BRA     DONE
+LOAD_WORD
+    MOVE.L  WORD_SIZE,SIZE
+    BRA     DONE
+LOAD_LONG
+    MOVE.L  LONG_SIZE,SIZE
+    BRA     DONE
+;----------------------------------------------------------------  
+
+
+LOAD_DESTINATION
+    CMP.B   #$0,D2
+    BEQ     DATA_REG
+    
+DATA_REG
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   
+    
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+
+
+
+                                            ;GET SPECIFIC BITS
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
 * ---------------------   
 *** move bits to D4 ***
 * --------------------- 
@@ -241,7 +371,13 @@ get_bits12_13
         lsr.w   #8,D4
         lsr.w   #6,D4
         RTS
-        
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+
+
+
+
+       
 * -----------------------
 * **** MOVE or MOVEA ****
 * -----------------------
@@ -320,7 +456,13 @@ get_Dregister
 get_immidiate   
     move.l  (ADDR_START),D5  * get immidiate long   
     RTS
-         
+    
+    
+    
+    
+                                            ;PRINT OPCODE
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************        
 * ----------------------------------
 * **** Print Source/Destination ****
 * ----------------------------------
@@ -441,8 +583,13 @@ print_immidiate_L   * print immidiate Long
     move.l  D5,D1    
     trap    #15  
     RTS
-    
-  
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************    
+
+
+                                ;LOAD EFFECTIVE ADDRESS FOR PRINTING
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
 * -------------------------
 * * Load register cString *
 * -------------------------
@@ -496,7 +643,17 @@ load_D6_REG
 load_D7_REG   
     lea     D7_REG,A2
     RTS
-    
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+
+
+
+
+
+
+                                            ;PRINT OTHER
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
 * ----------------------------
 * print length (.B | .W | .L) 
 * ----------------------------
@@ -576,7 +733,8 @@ show_error
     move.b  #14,D0
     trap    #15
     bra     TESTLOOP       
-
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
 
 STOP
     SIMHALT             ; halt simulator
@@ -674,6 +832,13 @@ A7_IN_POST  DC.B    '(A7)+',0
 ERROR       DC.B    'Something went wrong. Derp',0
 
 
+*OUTPUT_VARIABLES
+OPCODE      DS.L    1
+SIZE        DS.L    1
+SOURCE      DS.L    1
+DESTINATION DS.L    1
+
+
 
     END    START        ; last line of source
 
@@ -684,7 +849,8 @@ ERROR       DC.B    'Something went wrong. Derp',0
 
 
 
+
 *~Font name~Courier New~
-*~Font size~10~
+*~Font size~14~
 *~Tab type~1~
 *~Tab size~4~
