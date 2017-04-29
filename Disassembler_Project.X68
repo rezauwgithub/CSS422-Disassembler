@@ -1,6 +1,6 @@
 *-----------------------------------------------------------
 * Title      : NULL TERMINATORS "I'LL GET IT BACK, BABY" DISASSEMBLER
-* Written by : Reza, Edward, Eric
+* Written by : Reza, Eduard, Eric
 * Date       : Sometime in the future, but now back in the present
 * Description: Taking back op-code from Skynet, one byte at a time
 *-----------------------------------------------------------
@@ -828,15 +828,37 @@ A4_IN_POST  DC.B    '(A4)+',0
 A5_IN_POST  DC.B    '(A5)+',0
 A6_IN_POST  DC.B    '(A6)+',0
 A7_IN_POST  DC.B    '(A7)+',0
+*HEX VALUES
+HEX_0      DC.B    '0',0
+HEX_1      DC.B    '1',0
+HEX_2      DC.B    '2',0
+HEX_3      DC.B    '3',0
+HEX_4      DC.B    '4',0
+HEX_5      DC.B    '5',0
+HEX_6      DC.B    '6',0
+HEX_7      DC.B    '7',0
+HEX_8      DC.B    '8',0
+HEX_9      DC.B    '9',0
+HEX_10     DC.B    '10',0
+HEX_11     DC.B    '11',0
+HEX_12     DC.B    '12',0
+HEX_13     DC.B    '13',0
+HEX_14     DC.B    '14',0
+HEX_15     DC.B    '15',0
 *ERROR
 ERROR       DC.B    'Something went wrong. Derp',0
 
 
 *OUTPUT_VARIABLES
-OPCODE      DS.L    1
-SIZE        DS.L    1
-SOURCE      DS.L    1
-DESTINATION DS.L    1
+OPCODE                  DS.L    1
+SIZE                    DS.L    1
+SOURCE                  DS.L    1
+DESTINATION             DS.L    1
+DESTINATION_MODE        DS.B    1
+DESTINATION_REG         DS.B    1
+SOURCE_MODE             DS.B    1
+SOURCE_REG              DS.B    1
+
 
 
 
@@ -851,6 +873,6 @@ DESTINATION DS.L    1
 
 
 *~Font name~Courier New~
-*~Font size~14~
+*~Font size~12~
 *~Tab type~1~
 *~Tab size~4~
