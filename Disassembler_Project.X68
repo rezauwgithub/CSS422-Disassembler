@@ -269,6 +269,16 @@ MOVE_MOVEA_
 MOVEQ_
     RTS
 ADD_ADDA_
+    * 1. get size
+    * 2. get source register
+    * 3. get opmode
+    * 4. get EA mode
+    *   - if EA mode is An(001), OPCODE = ADDA
+    * 5. get EA register
+    * 6. Print OPCODE 
+    * 7. Based on opmode:
+    *     - print source register, EA register or;
+    *     - print EA register, source register    
     RTS
 ADDI_
     RTS
@@ -668,7 +678,7 @@ load_A6_REG
 load_A7_REG   
     lea     A7_REG,A2
     RTS
-    
+   
 load_D0_REG
     lea     D0_REG,A2
     RTS
@@ -1021,17 +1031,17 @@ HEX_6      DC.B    '6',0
 HEX_7      DC.B    '7',0
 HEX_8      DC.B    '8',0
 HEX_9      DC.B    '9',0
-HEX_A     DC.B    'A',0
-HEX_B     DC.B    'B',0
-HEX_C     DC.B    'C',0
-HEX_D     DC.B    'D',0
-HEX_E     DC.B    'E',0
-HEX_F       DC.B    'F',0
+HEX_A      DC.B    'A',0
+HEX_B      DC.B    'B',0
+HEX_C      DC.B    'C',0
+HEX_D      DC.B    'D',0
+HEX_E      DC.B    'E',0
+HEX_F      DC.B    'F',0
 *ERROR
 ERROR       DC.B    'Something went wrong. Derp',0
 
 
-*OUTPUT_VARIABLES
+*OUTPUT_VARIABLES      
 OPCODE                  DS.L    1
 SIZE                    DS.L    1
 SOURCE                  DS.L    1
@@ -1040,6 +1050,9 @@ DESTINATION_MODE        DS.B    1
 DESTINATION_REG         DS.B    1
 SOURCE_MODE             DS.B    1
 SOURCE_REG              DS.B    1
+EA_MODE                 DS.B    1
+EA_REG                  DS.B    1
+OPMODE                  DS.B    1
 
 
 
