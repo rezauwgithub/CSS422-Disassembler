@@ -21,6 +21,48 @@ ADDR_ITR
 
 
 
+                                        ;User Input
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+LOOP_INPUT
+
+* Prompt the user for the starting address.
+* After user enters the starting address, verify it is valid.
+* If invalid, prompt the user for the starting address again.
+
+    LEA			,A1
+	MOVE.B		#14,D0
+	TRAP		#15
+	
+	MOVE.B		#4,D0
+	TRAP		#15
+	
+	CMP.B		$00002000,D1
+	BLT			INVALID_INPUT_DETECTED
+	CMP.B	 	$000FFFFF,D1
+	BGT			INVALID_INPUT_DETECTED
+	
+	
+	MOVE.B		D1,D4	;Save the starting address
+	
+
+* Now prompt the user for the ending address.
+* After user enters the ending address, verify it is valid.
+* If invalid, prompt the user for the ending address again.
+
+	LEA			USER_INPUT2
+
+
+
+
+
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+
+
+
+
+
 
                                         ;TEST CODE        
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -472,7 +514,7 @@ print_source
     cmp.b   #0,D4
     beq     data_register
     cmp.b   #1,D4
-    beq     show_error     
+    beq     SHOW_ERROR     
     cmp.b   #2,D4
     beq     effective_address
     cmp.b   #3,D4
@@ -560,7 +602,7 @@ print_immidiate     * determine size of immidiate data
     beq     print_immidiate_W
     cmp.b   #$02,D4
     beq     print_immidiate_L
-    bra     show_error
+    bra     SHOW_ERROR
   
 print_immidiate_B   * print immidiate Byte
     lsr.l   #8,D5
@@ -664,7 +706,7 @@ print_length
     beq     print_W
     cmp.b   #$02,D4
     beq     print_L
-    bra     show_error
+    bra     SHOW_ERROR
     
 print_B
     lea         BYTE_SIZE,A1
@@ -728,7 +770,7 @@ print_new_line
 * --------------------
 * **** Show Error ****      // TO DO: Come up with more descriptive errors
 * --------------------
-show_error
+SHOW_ERROR
     lea     ERROR,A1
     move.b  #14,D0
     trap    #15
@@ -736,12 +778,28 @@ show_error
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
+
+* --------------------------------------
+* **** Invalid User Input Detected ****
+* --------------------------------------
+INVALID_INPUT_DETECTED
+    lea     INVALID,A1
+    move.b  #14,D0
+    trap    #15
+    bra     LOOP_INPUT       
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+
+
+
 STOP
     SIMHALT             ; halt simulator
 
 * Put variables and constants here
-USER_INPUT1  DC.B    'Please specify beginning address',0
-USER_INPUT2  DC.B    'Please specify ending address',0
+STARTING_ADDRESS_ENTERED	DC.B    'Please specify the starting address',0
+ENDING_ADDRESS ENTERED		DC.B    'Please specify the ending address',0
+INVALID_USER_INPUT			DC.B	'Please enter a valid address ($00002000 - $000FFFFF)',0		 
+
 *----------------------------------------------------------
 DOLLAR      DC.B    '$',0
 HASHTAG     DC.B    '#',0
@@ -863,6 +921,7 @@ SOURCE_REG              DS.B    1
 
 
     END    START        ; last line of source
+
 
 
 
