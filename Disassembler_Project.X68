@@ -67,10 +67,18 @@ LOOP_INPUT
                                         ;TEST CODE        
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
+* Test print immediate hex values
+    MOVEA.W #$8500,A2
+    MOVE.L  #$12345678,(A2)
+    MOVEA.W #$8500,A2
+    BRA     PRINT_IMMEDIATE_LONG
+    
+    BRA     STOP
+
 * Test MOVE_MOVEA_
 TEST1   move.w  #$363C,D3
         bsr     MOVE_MOVEA_
-        bsr     STOP   
+        bsr     STOP  
 
 * Put program code here
     MOVE.B  D7,D0
@@ -220,9 +228,9 @@ MOVE_MOVEA_
     
     MOVE.W  (A2),D4
     LSR.W   #$1,D4
-    MOVE.B  D2
-    JSR     MO
-    JSR     
+    *MOVE.B  D2
+    *JSR     MO
+    *JSR     
     
     
     
@@ -601,8 +609,8 @@ print_immidiate     * determine size of immidiate data
     cmp.b   #$03,D4
     beq     print_immidiate_W
     cmp.b   #$02,D4
-    beq     print_immidiate_L
     bra     SHOW_ERROR
+    bra     show_error
   
 print_immidiate_B   * print immidiate Byte
     lsr.l   #8,D5
@@ -689,11 +697,117 @@ load_D7_REG
 ***************************************************************************************************
 
 
+                                ;PRINT IMMEDIATE BYTE,WORD,LONG
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+PRINT_IMMEDIATE_BYTE
+    MOVE.B  (A2)+,D3
+    MOVE.B  D3,D4
+    LSR.B   #4,D4
+    BSR     PRINT_HEX_BYTE
+    MOVE.B  D3,D4
+    LSL.B   #4,D4
+    LSR.B   #4,D4
+    BSR     PRINT_HEX_BYTE
+    RTS
 
+PRINT_IMMEDIATE_WORD
+    BSR     PRINT_IMMEDIATE_BYTE
+    BSR     PRINT_IMMEDIATE_BYTE
+    RTS
 
+PRINT_IMMEDIATE_LONG
+    BSR     PRINT_IMMEDIATE_BYTE
+    BSR     PRINT_IMMEDIATE_BYTE
+    BSR     PRINT_IMMEDIATE_BYTE
+    BSR     PRINT_IMMEDIATE_BYTE
+    RTS
 
+PRINT_HEX_BYTE
+    CMP.B   #$00,D4
+    BEQ     PRINT_HEX_0
+    CMP.B   #$01,D4
+    BEQ     PRINT_HEX_1
+    CMP.B   #$02,D4
+    BEQ     PRINT_HEX_2
+    CMP.B   #$03,D4
+    BEQ     PRINT_HEX_3
+    CMP.B   #$04,D4
+    BEQ     PRINT_HEX_4
+    CMP.B   #$05,D4
+    BEQ     PRINT_HEX_5
+    CMP.B   #$06,D4
+    BEQ     PRINT_HEX_6
+    CMP.B   #$07,D4
+    BEQ     PRINT_HEX_7
+    CMP.B   #$08,D4
+    BEQ     PRINT_HEX_8
+    CMP.B   #$09,D4
+    BEQ     PRINT_HEX_9
+    CMP.B   #$0A,D4
+    BEQ     PRINT_HEX_A
+    CMP.B   #$0B,D4
+    BEQ     PRINT_HEX_B
+    CMP.B   #$0C,D4
+    BEQ     PRINT_HEX_C
+    CMP.B   #$0D,D4
+    BEQ     PRINT_HEX_D
+    CMP.B   #$0E,D4
+    BEQ     PRINT_HEX_E
+    CMP.B   #$0F,D4
+    BEQ     PRINT_HEX_F
+    BRA     SHOW_ERROR
 
-                                            ;PRINT OTHER
+PRINT_HEX_0
+    LEA     HEX_0,A1
+    BRA     PRINT_
+PRINT_HEX_1
+    LEA     HEX_1,A1
+    BRA     PRINT_
+PRINT_HEX_2
+    LEA     HEX_2,A1
+    BRA     PRINT_
+PRINT_HEX_3
+    LEA     HEX_3,A1
+    BRA     PRINT_
+PRINT_HEX_4
+    LEA     HEX_4,A1
+    BRA     PRINT_
+PRINT_HEX_5
+    LEA     HEX_5,A1
+    BRA     PRINT_
+PRINT_HEX_6
+    LEA     HEX_6,A1
+    BRA     PRINT_
+PRINT_HEX_7
+    LEA     HEX_7,A1
+    BRA     PRINT_
+PRINT_HEX_8
+    LEA     HEX_8,A1
+    BRA     PRINT_
+PRINT_HEX_9
+    LEA     HEX_9,A1
+    BRA     PRINT_
+PRINT_HEX_A
+    LEA     HEX_A,A1
+    BRA     PRINT_
+PRINT_HEX_B
+    LEA     HEX_B,A1
+    BRA     PRINT_
+PRINT_HEX_C
+    LEA     HEX_C,A1
+    BRA     PRINT_
+PRINT_HEX_D
+    LEA     HEX_D,A1
+    BRA     PRINT_
+PRINT_HEX_E       
+    LEA     HEX_E,A1
+    BRA     PRINT_
+PRINT_HEX_F
+    LEA     HEX_F,A1
+    BRA     PRINT_
+
+                                           ;PRINT OTHER
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 * ----------------------------
@@ -704,9 +818,9 @@ print_length
     beq     print_B
     cmp.b   #$03,D4
     beq     print_W
-    cmp.b   #$02,D4
-    beq     print_L
     bra     SHOW_ERROR
+    beq     print_L
+    bra     show_error
     
 print_B
     lea         BYTE_SIZE,A1
@@ -726,6 +840,14 @@ print_L
     trap        #15
     RTS 
     
+* --------------------
+* ****** Print *******
+* --------------------
+PRINT_
+    move.b  #14,D0
+    trap    #15
+    RTS
+
 * --------------------
 * * Print comma ', ' *
 * --------------------
@@ -767,7 +889,9 @@ print_new_line
 **********************
 
   
-* --------------------
+SHOW_ERROR
+SHOW_ERROR
+
 * **** Show Error ****      // TO DO: Come up with more descriptive errors
 * --------------------
 SHOW_ERROR
@@ -775,9 +899,6 @@ SHOW_ERROR
     move.b  #14,D0
     trap    #15
     bra     TESTLOOP       
-;///////////////////////////////////////////////////////////////////////////////////////////////////
-***************************************************************************************************
-
 
 * --------------------------------------
 * **** Invalid User Input Detected ****
@@ -792,14 +913,17 @@ INVALID_INPUT_DETECTED
 
 
 
-STOP
-    SIMHALT             ; halt simulator
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
 
-* Put variables and constants here
+STOP
 STARTING_ADDRESS_ENTERED	DC.B    'Please specify the starting address',0
 ENDING_ADDRESS ENTERED		DC.B    'Please specify the ending address',0
 INVALID_USER_INPUT			DC.B	'Please enter a valid address ($00002000 - $000FFFFF)',0		 
 
+* Put variables and constants here
+USER_INPUT1  DC.B    'Please specify beginning address',0
+USER_INPUT2  DC.B    'Please specify ending address',0
 *----------------------------------------------------------
 DOLLAR      DC.B    '$',0
 HASHTAG     DC.B    '#',0
@@ -897,12 +1021,12 @@ HEX_6      DC.B    '6',0
 HEX_7      DC.B    '7',0
 HEX_8      DC.B    '8',0
 HEX_9      DC.B    '9',0
-HEX_10     DC.B    '10',0
-HEX_11     DC.B    '11',0
-HEX_12     DC.B    '12',0
-HEX_13     DC.B    '13',0
-HEX_14     DC.B    '14',0
-HEX_15     DC.B    '15',0
+HEX_A     DC.B    'A',0
+HEX_B     DC.B    'B',0
+HEX_C     DC.B    'C',0
+HEX_D     DC.B    'D',0
+HEX_E     DC.B    'E',0
+HEX_F       DC.B    'F',0
 *ERROR
 ERROR       DC.B    'Something went wrong. Derp',0
 
@@ -921,6 +1045,10 @@ SOURCE_REG              DS.B    1
 
 
     END    START        ; last line of source
+
+
+
+
 
 
 
