@@ -1,8 +1,8 @@
 *-----------------------------------------------------------
-* Title      :
-* Written by :
-* Date       :
-* Description:
+* Title      : NULL TERMINATORS "I'LL GET IT BACK, BABY" DISASSEMBLER
+* Written by : Reza, Edward, Eric
+* Date       : Sometime in the future, but now back in the present
+* Description: Taking back op-code from Skynet, one byte at a time
 *-----------------------------------------------------------
     ORG    $1000
 START:
@@ -676,6 +676,7 @@ ERROR       DC.B    'Something went wrong. Derp',0
 
 
     END    START        ; last line of source
+
 
 
 
