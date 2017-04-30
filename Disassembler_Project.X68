@@ -4,9 +4,7 @@
 * Date       : Sometime in the future, but now back in the present
 * Description: Taking back op-code from Skynet, one byte at a time
 *-----------------------------------------------------------
-    ORG    $1000
-START:
-    MEMORY ROM  $006000,$006FFF
+    
                                         ;CONSTANTS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -15,10 +13,11 @@ LF          EQU $0A
                  
 ADDR_START  EQU $1002
 ADDR_END    EQU $1003
-ADDR_ITR
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
-    
+    ORG    $1000
+START:
+    MEMORY READ  $006000,$006FFF
 
                                 ;HOW TO USE ASCII TABLE TO PRINT
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,27 +47,27 @@ LOOP_INPUT
 * After user enters the starting address, verify it is valid.
 * If invalid, prompt the user for the starting address again.
 
-    LEA			,A1
-	MOVE.B		#14,D0
-	TRAP		#15
-	
-	MOVE.B		#4,D0
-	TRAP		#15
-	
-	CMP.B		$00002000,D1
-	BLT			INVALID_INPUT_DETECTED
-	CMP.B	 	$000FFFFF,D1
-	BGT			INVALID_INPUT_DETECTED
-	
-	
-	MOVE.B		D1,D4	;Save the starting address
+*    LEA			,A1
+*	MOVE.B		#14,D0
+*	TRAP		#15
+*	
+*	MOVE.B		#4,D0
+*	TRAP		#15
+*	
+*	CMP.B		$00002000,D1
+*	BLT			INVALID_INPUT_DETECTED
+*	CMP.B	 	$000FFFFF,D1
+*	BGT			INVALID_INPUT_DETECTED
+*	
+*	
+*	MOVE.B		D1,D4	;Save the starting address
 	
 
 * Now prompt the user for the ending address.
 * After user enters the ending address, verify it is valid.
 * If invalid, prompt the user for the ending address again.
 
-	LEA			USER_INPUT2
+*	LEA			USER_INPUT2
 
 
 
@@ -85,25 +84,21 @@ LOOP_INPUT
                                         ;TEST CODE        
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
-* Test print immediate hex values
-    MOVEA.W #$8500,A2
-    MOVE.L  #$12345678,(A2)
-    MOVEA.W #$8500,A2
-    BRA     PRINT_IMMEDIATE_LONG
-    
-    BRA     STOP
-
-* Test MOVE_MOVEA_
-TEST1   move.w  #$363C,D3
-        bsr     MOVE_MOVEA_
-        bsr     STOP  
+** Test print immediate hex values
+*    MOVEA.W #$8500,A2
+*    MOVE.L  #$12345678,(A2)
+*    MOVEA.W #$8500,A2
+*    BRA     PRINT_IMMEDIATE_LONG
+*    
+*    BRA     STOP
+*
+** Test MOVE_MOVEA_
+*TEST1   move.w  #$363C,D3
+*        bsr     MOVE_MOVEA_
+*        bsr     STOP  
 
 * Put program code here
-    MOVE.B  D7,D0
-    MOVE.W  D7,D0
-    MOVE.L  D7,D0
-    ADD.B   #$FF,D3
-    MOVEA.L #$6000,A0
+    MOVEA.L #$8000,A0
     MOVEA.L A0,A2
     MOVE.W  #$1007,(A2)+
     MOVE.W  #$3007,(A2)+
@@ -127,89 +122,132 @@ TESTLOOP
     JSR ROTATEBYTE
                 
         
+        
+CASE1
         ;NOP/MOVEM/LEA/CLR/JSR/RTS    
 ;----------------------    
     CMP.L   #$4,D2
+    BNE     CASE2
     JSR     NOP_MOVEM_LEA_CLR_JSR_RTS_
+    JMP     MOVENEXT
 ;----------------------
 
+
+CASE2
         ;MOVE/MOVEA    
 ;----------------------    
     CMP.L   #$1,D2
+    BNE     CASE2_1
     JSR     MOVE_MOVEA_
+    JMP     MOVENEXT
+CASE2_1
     CMP.L   #$2,D2
+    BNE     CASE2_2
     JSR     MOVE_MOVEA_
+    JMP     MOVENEXT
+CASE2_2
     CMP.L   #$3,D2
+    BNE     CASE3
     JSR     MOVE_MOVEA_
+    JMP     MOVENEXT
 ;----------------------
 
+CASE3
         ;MOVEQ    
 ;----------------------    
     CMP.L   #$7,D2
+    BNE     CASE4
     JSR     MOVEQ_
+    JMP     MOVENEXT
 ;----------------------
 
+CASE4
         ;ADD/ADDA    
 ;----------------------    
     CMP.L   #$D,D2
+    BNE     CASE5
     JSR     ADD_ADDA_
+    JMP     MOVENEXT
 ;----------------------
 
+CASE5
         ;ADDI   
 ;----------------------    
     CMP.L   #$0,D2
+    BNE     CASE6
     JSR     ADDI_
+    JMP     MOVENEXT
 ;----------------------
-      
+
+CASE6      
         ;ADDQ    
 ;----------------------    
     CMP.L   #$5,D2
+    BNE     CASE7
     JSR     ADDQ_
+    JMP     MOVENEXT
 ;----------------------
-    
+
+CASE7   
         ;SUB    
 ;----------------------    
     CMP.L   #$9,D2
+    BNE     CASE8
     JSR     SUB_
+    JMP     MOVENEXT
 ;----------------------
 
+CASE8
         ;MULS_AND    
 ;----------------------    
     CMP.L   #$C,D2
+    BNE     CASE9
     JSR     MULS_AND_
+    JMP     MOVENEXT
 ;----------------------
 
+CASE9
         ;OR_DIVU    
 ;----------------------    
     CMP.L   #$8,D2
+    BNE     CASE10
     JSR     SUB_
+    JMP     MOVENEXT
 ;----------------------
 
+CASE10
         ;LSd_ASd_ROd    
 ;----------------------    
     CMP.L   #$E,D2
+    BNE     CASE11
     JSR     LSd_ASd_ROd_
+    JMP     MOVENEXT
 ;----------------------
 
+CASE11
         ;CMP   
 ;----------------------    
     CMP.L   #$B,D2
+    BNE     CASE12
     JSR     CMP_
+    JMP     MOVENEXT
 ;----------------------
 
+CASE12
         ;BCC   
 ;----------------------    
     CMP.L   #$6,D2
+    BNE     DEFAULT
     JSR     BCC_
+    JMP     MOVENEXT
 ;----------------------
 
-
+DEFAULT
         ;FAIL 
 ;----------------------    
-    LEA ERROR,A1
-    MOVE.B  #13,D0
-    TRAP    #15
-    BRA     MOVENEXT
+    LEA     ERROR,A1
+    JSR     TASK13
+    JMP     MOVENEXT
 ;----------------------
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -229,35 +267,80 @@ ROTATEBYTE
     RTS
 MOVENEXT
     ADDA.L  #$2,A2
+    CLR.L   D2
     JMP     TESTLOOP
 
 NOP_MOVEM_LEA_CLR_JSR_RTS_   
     RTS
       
-MOVE_MOVEA_
+MOVE_MOVEA_                     ;BOOKMARK
+    JSR     CLEAR_REGS
     MOVE.B  (A2),D2
     JSR     S1
-    JSR     LOAD_SIZE
-    CLR.L   D2
+    *JSR     LOAD_SIZE
+    MOVE.B  D2,SIZE
+    JSR     CLEAR_REGS
     
+    MOVE.B  (A2),D2
     JSR     XN
-    MOVE.B  D2,D3
-    CLR.L   D2
+    MOVE.B  D2,DESTINATION_REG
+    JSR     CLEAR_REGS
     
     MOVE.W  (A2),D4
     LSR.W   #$1,D4
-    *MOVE.B  D2
-    *JSR     MO
-<<<<<<< HEAD
+    MOVE.B  D4,D2
+    JSR     MO
+    MOVE.B  D2,DESTINATION_MODE
+    JSR     CLEAR_REGS
     
+    MOVE.W  (A2),D4
+    LSL.W   #$2,D4
+    MOVE.B  D4,D2
+    JSR     MO
+    MOVE.B  D2,SOURCE_MODE
+    JSR     CLEAR_REGS
     
-    RTS   
-=======
-    *JSR     
->>>>>>> 4a5fb902a1d32f700673881356a9b03d9ed5763c
+    MOVE.W  (A2),D4
+    MOVE.B  D4,D2
+    LSL.B   #$1,D2
+    JSR     XN
+    MOVE.B  D2,SOURCE_REG
+    JSR     CLEAR_REGS
     
+    CMP.B   #$1,DESTINATION_MODE
+    BEQ     PRINT_MOVEA
+    *BRA     PRINT_MOVE
+
+PRINT_MOVEA
+    LEA     MOVEA_OP,A1
+    JSR     TASK14
     
+    JSR     PRINT_S1
     
+    JSR     CLEAR_REGS
+    MOVE.B  SOURCE_MODE,D2
+    MOVE.B  SOURCE_REG,D4
+    
+    MULS.W  #$30,D2
+    MULS.W  #$6,D4
+    ADD.W   D2,D4
+    LEA     ASCII_TABLE,A1
+    ADDA    D4,A1
+    JSR     TASK14
+    
+    JSR     PRINT_COMMA
+    JSR     CLEAR_REGS
+    
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    
+    MULS.W  #$30,D2
+    MULS.W  #$6,D4
+    ADD.W   D2,D4
+    LEA     ASCII_TABLE,A1
+    ADDA    D3,A1
+    JSR     TASK13
+    RTS
     
 
 *    * print Op-code                                     OUTPUT SEQUENCE
@@ -350,28 +433,33 @@ D2          ;MOVEM
 D3          ;SHIFTS
     RTS
     
+CLEAR_REGS
+    CLR.L   D2
+    CLR.L   D4
+    RTS
+    
 ;----------------------------------------------------------------   
-LOAD_SIZE
-    CMP.B   #$1,D2
-    BEQ     LOAD_BYTE
-    CMP.B   #$3,D2
-    BEQ     LOAD_WORD
-    CMP.B   #$2,D2
-    BEQ     LOAD_LONG
+PRINT_S1
+    CMP.B   #$1,SIZE
+    BEQ     PRINT_BYTE
+    CMP.B   #$3,SIZE
+    BEQ     PRINT_WORD
+    CMP.B   #$2,SIZE
+    BEQ     PRINT_LONG
 
 DONE
     RTS
-
-
-
-LOAD_BYTE
-    MOVE.L  BYTE_SIZE,SIZE
+PRINT_BYTE
+    LEA     BYTE_SIZE,A1
+    JSR     TASK14
     BRA     DONE
-LOAD_WORD
-    MOVE.L  WORD_SIZE,SIZE
+PRINT_WORD
+    LEA     WORD_SIZE,A1
+    JSR     TASK14
     BRA     DONE
-LOAD_LONG
-    MOVE.L  LONG_SIZE,SIZE
+PRINT_LONG
+    LEA     LONG_SIZE,A1
+    JSR     TASK14
     BRA     DONE
 ;----------------------------------------------------------------  
 
@@ -462,26 +550,24 @@ get_bits12_13
 
 
        
-* -----------------------
-* **** MOVE or MOVEA ****
-* -----------------------
-move_or_movea
-    cmp.b   #$01,D4
-    beq     print_moveA
-    bra     print_move
-    
-print_moveA
-    lea         MOVEA_OP,A1
-    move.b      #14,D0          
-    trap        #15    
-    RTS
-    
-print_move
-    lea         MOVE_OP,A1
-    move.b      #14,D0         
-    trap        #15
-    RTS
-    
+** -----------------------
+** **** MOVE or MOVEA ****
+** -----------------------
+*move_or_movea
+*    cmp.b   #$01,D4
+*    beq     print_moveA
+*    bra     print_move
+*    
+*print_moveA
+*    lea         MOVEA_OP,A1
+*    JSR         TASK14
+*    RTS
+*    
+*print_move
+*    lea         MOVE_OP,A1
+*    JSR         TASK14
+*    RTS
+*    
 
      
 * ---------------------
@@ -887,8 +973,7 @@ PRINT_
 * --------------------
 print_comma
     lea     COMMA,A1
-    move.b  #14,D0
-    trap    #15
+    JSR     TASK14
     RTS
     
 * ---------------------
@@ -938,10 +1023,37 @@ SHOW_ERROR
 * **** Invalid User Input Detected ****
 * --------------------------------------
 INVALID_INPUT_DETECTED
-    lea     INVALID,A1
+    *lea     INVALID,A1
     move.b  #14,D0
     trap    #15
     bra     LOOP_INPUT       
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+
+
+
+                                        ;PRINT TRAPS
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+TASK13
+    CLR.L   D0
+    MOVE.B  #13,D0
+    TRAP    #15
+    RTS
+TASK14
+    CLR.L   D0
+    MOVE.B  #14,D0
+    TRAP    #15
+    RTS
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+
+
+
+                                        ;PRINT ADDRESS
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+;IMPLEMENT A WAY TO PRINT THE ADDRESS WHERE EACH OPERATION OCCURS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
@@ -952,7 +1064,7 @@ INVALID_INPUT_DETECTED
 
 STOP
 STARTING_ADDRESS_ENTERED	DC.B    'Please specify the starting address',0
-ENDING_ADDRESS ENTERED		DC.B    'Please specify the ending address',0
+ENDING_ADDRESS_ENTERED		DC.B    'Please specify the ending address',0
 INVALID_USER_INPUT			DC.B	'Please enter a valid address ($00002000 - $000FFFFF)',0		 
 
 * Put variables and constants here
@@ -995,9 +1107,9 @@ BCC_OP      DC.B    'BCC',0
 JSR_OP      DC.B    'JSR',0
 RTS_OP      DC.B    'RTS',0
 *-------------------SIZE OF OP-----------------------------
-BYTE_SIZE   DC.B    '.B ',0
-WORD_SIZE   DC.B    '.W ',0
-LONG_SIZE   DC.B    '.L ',0
+BYTE_SIZE   DC.B    '.B     ',0
+WORD_SIZE   DC.B    '.W     ',0
+LONG_SIZE   DC.B    '.L     ',0
 *--------------------REGISTERS-----------------------------
 *ADDRESS REGISTERS...
 A0_REG      DC.B    'A0',0
@@ -1066,8 +1178,7 @@ ERROR       DC.B    'Something went wrong. Derp',0
 
 
 *OUTPUT_VARIABLES      
-OPCODE                  DS.L    1
-SIZE                    DS.L    1
+SIZE                    DS.B    1
 SOURCE_ADDRESS          DS.L    1
 DESTINATION_ADDRESS     DS.L    1
 DESTINATION_MODE        DS.B    1
@@ -1126,22 +1237,6 @@ ASCII_TABLE
       DC.B    '-(A7)',0
     END    START        ; last line of source
 
-
-
-
-
-
-
-
-
-
-<<<<<<< HEAD
-=======
-
-
-
-
->>>>>>> 4a5fb902a1d32f700673881356a9b03d9ed5763c
 *~Font name~Courier New~
 *~Font size~12~
 *~Tab type~1~
