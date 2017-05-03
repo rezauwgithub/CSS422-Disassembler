@@ -17,7 +17,7 @@ ADDR_END    EQU $1003
 ***************************************************************************************************
     ORG    $1000
 START:
-    MEMORY READ  $006000,$006FFF
+    MEMORY READ  $006000,$0060EF
 
                                 ;HOW TO USE ASCII TABLE TO PRINT
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -309,7 +309,7 @@ MOVE_MOVEA_                     ;BOOKMARK
     
     CMP.B   #$1,DESTINATION_MODE
     BEQ     PRINT_MOVEA
-    *BRA     PRINT_MOVE
+    BRA     PRINT_MOVE
 
 PRINT_MOVEA
     LEA     MOVEA_OP,A1
@@ -341,6 +341,77 @@ PRINT_MOVEA
     ADDA    D3,A1
     JSR     TASK13
     RTS
+
+PRINT_MOVE
+    LEA     MOVE_OP,A1
+    JSR     TASK14
+    
+    JSR     PRINT_S1
+    
+    JSR     CLEAR_REGS
+    JSR     PRINT_SOURCE ;---------------
+    MOVE.B  SOURCE_MODE,D2
+    MOVE.B  SOURCE_REG,D4
+    
+    MULS.W  #$30,D2
+    MULS.W  #$6,D4
+    ADD.W   D2,D4
+    LEA     ASCII_TABLE,A1
+    ADDA    D4,A1
+    JSR     TASK14
+    
+    JSR     PRINT_COMMA
+    JSR     CLEAR_REGS
+    
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    
+    MULS.W  #$30,D2
+    MULS.W  #$6,D4
+    ADD.W   D2,D4
+    LEA     ASCII_TABLE,A1
+    ADDA    D3,A1
+    JSR     TASK13
+    RTS
+    
+    
+    
+PRINT_SOURCE
+    JSR     CLEAR_REGS
+    MOVE.B  SOURCE_MODE,D2
+    MOVE.B  SOURCE_REG,D4
+    CMP     #$7,D2
+    BEQ     PRINT_ABSOLUTE_OR_IMMEDIATE
+    
+FINISH_SOURCE
+    RTS
+
+PRINT_DESTINATION
+
+PRINT_ABSOLUTE_OR_IMMEDIATE
+    CLR.L   D6
+    MOVE.W  D2,D6
+    ADD.W   D4,D6
+    CMP.W   #$7,D6
+    BEQ     ABSOLUTE_SHORT
+
+ABSOLUTE_SHORT
+    CLR.L       D3
+    LEA         HEX_ASCII,A3
+    MOVEA.L     A2,A6
+    ADDA.L      #$2,A6
+    CLR.L       D6
+    MOVE.W      (A6),D6
+    MOVEA.L     #$5000,A6
+    ROR.W       #$8,D6
+    MOVE.B      D6,D7
+    LSR.B       #$4,D7
+    ADDA        D7,A3
+    *MOVE.B      (A3),
+    
+       
+    
+    
     
 
 *    * print Op-code                                     OUTPUT SEQUENCE
@@ -637,26 +708,28 @@ get_immidiate
 * **** Print Source/Destination ****
 * ----------------------------------
 * 3 bits should be in D4
-print_source
 
-    cmp.b   #0,D4
-    beq     data_register
-    cmp.b   #1,D4
-    beq     SHOW_ERROR     
-    cmp.b   #2,D4
-    beq     effective_address
-    cmp.b   #3,D4
-    beq     effective_address_increment
-    cmp.b   #4,D4
-    beq     effective_address_decrement
-    cmp.b   #5,D4
-    beq     effective_address *(d16,An) do we need to do this?
-    cmp.b   #6,D4
-    beq     effective_address *(d16,An,Xn) do we need to do this?  
-    cmp.b   #7,D4
-    beq     print_immidiate     
-    
-    RTS
+
+*print_source
+*
+*    cmp.b   #0,D4
+*    beq     data_register
+*    cmp.b   #1,D4
+*    beq     SHOW_ERROR     
+*    cmp.b   #2,D4
+*    beq     effective_address
+*    cmp.b   #3,D4
+*    beq     effective_address_increment
+*    cmp.b   #4,D4
+*    beq     effective_address_decrement
+*    cmp.b   #5,D4
+*    beq     effective_address *(d16,An) do we need to do this?
+*    cmp.b   #6,D4
+*    beq     effective_address *(d16,An,Xn) do we need to do this?  
+*    cmp.b   #7,D4
+*    beq     print_immidiate     
+*    
+*    RTS
     
 data_register
     lea         (A2),A1
@@ -1235,7 +1308,29 @@ ASCII_TABLE
       DC.B    '-(A5)',0
       DC.B    '-(A6)',0
       DC.B    '-(A7)',0
+      
+      
+    ORG $7000
+HEX_ASCII
+      DC.B    $30
+      DC.B    $31
+      DC.B    $32
+      DC.B    $33
+      DC.B    $34
+      DC.B    $35
+      DC.B    $36
+      DC.B    $37
+      DC.B    $38
+      DC.B    $39
+      DC.B    $41
+      DC.B    $42
+      DC.B    $43
+      DC.B    $44
+      DC.B    $45
+      DC.B    $46    
+
     END    START        ; last line of source
+
 
 *~Font name~Courier New~
 *~Font size~12~
