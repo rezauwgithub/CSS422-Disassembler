@@ -99,13 +99,14 @@ LOOP_INPUT
 * Put program code here
     MOVEA.L #$8000,A0
     MOVEA.L A0,A2
+    MOVE.L  #$18BC00AB,(A2)+
     MOVE.W  #$1007,(A2)+
     MOVE.W  #$3007,(A2)+
     MOVE.W  #$2007,(A2)+
     MOVE.L  #$20387FFF,(A2)+
     MOVE.L  #$38390000,(A2)+
     MOVE.W  #$8000,(A2)+
-    MOVE.L  #$18BC00AB,(A2)+
+    
     *BSR     MOVE_MOVEA_
     *JMP     STOP                    
    
@@ -282,6 +283,7 @@ MOVE_MOVEA_                     ;BOOKMARK
     MOVE.B  (A2),D2
     JSR     S1              * Load size type 1
     MOVE.B  D2,SIZE
+    
     JSR     CLEAR_REGS
     
     MOVE.B  (A2),D2
@@ -486,8 +488,8 @@ IMMEDIATE
     JSR         PRINT_DOLLAR
     MOVEA.L     A2,A6
     ADDA.L      #$2,A6
-    MOVE.W      SIZE,D3
-    JSR         COMPARE_SIZE1
+    MOVE.B      SIZE,D3
+    BSR         COMPARE_SIZE1
     RTS 
     
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -571,7 +573,7 @@ get_bits12_13
 ***************************************************************************************************
 COMPARE_SIZE1
     CMP.W   #$1,D3
-    BEQ     PRINT_IMMEDIATE_BYTE
+    BEQ     PRINT_IMMEDIATE_WORD
     CMP.W   #$2,D3
     BEQ     PRINT_IMMEDIATE_LONG
     CMP.W   #$3,D3
