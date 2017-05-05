@@ -1,10 +1,9 @@
- *-----------------------------------------------------------
+*-----------------------------------------------------------
 * Title      : NULL TERMINATORS "I'LL GET IT BACK, BABY" DISASSEMBLER
 * Written by : Reza, Eduard, Eric
 * Date       : Sometime in the future, but now back in the present
 * Description: Taking back op-code from Skynet, one byte at a time
-*-----------------------------------------------------------
-    
+*----------------------------------------------------------- 
                                         ;CONSTANTS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -343,28 +342,23 @@ PRINT_MOVEA
     RTS
 
 PRINT_MOVE
-    LEA     MOVE_OP,A1
-    JSR     TASK14
+    LEA     MOVE_OP,A1      ;PRINTS MOVE
+    JSR     TASK14     
+    JSR     PRINT_S1        ;PRINTS .B,.W,.L
     
-    JSR     PRINT_S1
     
-    JSR     CLEAR_REGS
-    JSR     PRINT_SOURCE ;---------------
-    MOVE.B  SOURCE_MODE,D2
-    MOVE.B  SOURCE_REG,D4
     
-    MULS.W  #$30,D2
-    MULS.W  #$6,D4
-    ADD.W   D2,D4
-    LEA     ASCII_TABLE,A1
-    ADDA    D4,A1
-    JSR     TASK14
+    JSR     CLEAR_REGS      ;CLEARS D2,D4
+    MOVE.B  SOURCE_MODE,D2  ;LOAD SOURCE MODE INTO D2
+    MOVE.B  SOURCE_REG,D4   ;LOAD SOURCE REG  INTO D4
+    JSR     PRINT_MODE_REG ;---------------
     
     JSR     PRINT_COMMA
-    JSR     CLEAR_REGS
-    
+
+    JSR     CLEAR_REGS    
     MOVE.B  DESTINATION_MODE,D2
     MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
     
     MULS.W  #$30,D2
     MULS.W  #$6,D4
@@ -376,39 +370,96 @@ PRINT_MOVE
     
     
     
-PRINT_SOURCE
-    JSR     CLEAR_REGS
-    MOVE.B  SOURCE_MODE,D2
-    MOVE.B  SOURCE_REG,D4
+PRINT_MODE_REG
     CMP     #$7,D2
     BEQ     PRINT_ABSOLUTE_OR_IMMEDIATE
-    
+ 
+    MULS.W  #$30,D2
+    MULS.W  #$6,D4
+    ADD.W   D2,D4
+    LEA     ASCII_TABLE,A1
+    ADDA    D4,A1
+    JSR     TASK14
+    RTS
 FINISH_SOURCE
     RTS
 
 PRINT_DESTINATION
 
 PRINT_ABSOLUTE_OR_IMMEDIATE
-    CLR.L   D6
-    MOVE.W  D2,D6
-    ADD.W   D4,D6
-    CMP.W   #$7,D6
-    BEQ     ABSOLUTE_SHORT
-
-ABSOLUTE_SHORT
     CLR.L       D3
-    LEA         HEX_ASCII,A3
     MOVEA.L     A2,A6
     ADDA.L      #$2,A6
-    CLR.L       D6
-    MOVE.W      (A6),D6
-    MOVEA.L     #$5000,A6
-    ROR.W       #$8,D6
-    MOVE.B      D6,D7
-    LSR.B       #$4,D7
+ 
+    CMP.W   #$0,D4
+    BEQ     ABSOLUTE_SHORT
+    CMP.W   #$1,D4
+    BEQ     ABSOLUTE_LONG
+    CMP.W   #$4,D4
+    BEQ     IMMEDIATE
+
+ABSOLUTE_SHORT
+    JSR         PRINT_DOLLAR
+    JSR         PRINT_IMMEDIATE_WORD
+    RTS
+ABSOLUTE_LONG 
+    JSR         PRINT_DOLLAR
+    JSR         PRINT_IMMEDIATE_LONG
+    RTS
+IMMEDIATE
+    JSR         PRINT_HASHTAG
+    JSR         PRINT_DOLLAR
+    MOVEA.L     A2,A6
+    ADDA.L      #$2,A6
+    MOVE.W      SIZE,D3
+    JSR         COMPARE_SIZE1
+    RTS
+
+
+
+
+
+*    CLR.L       D6
+*    MOVE.W      (A6),D6
+*    MOVEA.L     #$5000,A6
+*    ROR.W       #$8,D6
+*    MOVE.B      D6,D7
+*    LSR.B       #$4,D7
     ADDA        D7,A3
     *MOVE.B      (A3),
     
+       
+    
+    
+    
+
+*    * print Op-code                                     OUTPUT SEQUENCE
+*    bsr     get_bits3_5     * get mode                  brackets [] show added portion   
+*    bsr     move_or_movea   * print MOVE or MOVEA      
+*                            *                               1. [MOVE(A)]
+*    * print length                                          
+*    bsr     get_bits12_13
+*    bsr     print_length     * print length (.L.W.B)
+*    
+*    * print source                                          2. MOVE(A) [Xn]
+*    bsr     get_bits0_2     * get register #
+*    move.b  D4,D5           * store register # (0-7)
+*    bsr     get_bits3_5
+*    bsr     register_type   * get and store 
+*    bsr     print_source    * register type (D or A)
+*    
+*    * print separating comma                                3. MOVE(A) Xn [, ]
+*    bsr     print_comma
+*    
+*    * print destination                                     4. MOVE(A) Xn, [Xn]   
+*    bsr     get_bits9_11    * get register #
+*    move.b  D4,D5           * store register # (0-7)    
+*    bsr     get_bits6_8
+*    bsr     register_type   * get and store                 5. MOVE(A) Xn, Xn
+*    bsr     print_source    * register type (D or A)       
+*                                                                ** DONE **
+*    * start new line when finished                                                   
+*    bsr     print_new_line
     RTS
     
    
@@ -586,11 +637,293 @@ get_bits12_13
 ***************************************************************************************************
 
 
+
+
+       
+** -----------------------
+** **** MOVE or MOVEA ****
+** -----------------------
+*move_or_movea
+*    cmp.b   #$01,D4
+*    beq     print_moveA
+*    bra     print_move
+*    
+*print_moveA
+*    lea         MOVEA_OP,A1
+*    JSR         TASK14
+*    RTS
+*    
+*print_move
+*    lea         MOVE_OP,A1
+*    JSR         TASK14
+*    RTS
+*    
+
+     
+* ---------------------
+* * get Register type *
+* ---------------------
+* 3 bits should be in D4
+register_type
+    cmp.b   #$00,D4
+    beq     get_Dregister
+    cmp.b   #$07,D4
+    beq     get_immidiate
+    
+    bra     get_Aregister    
+
+get_Aregister
+    cmp.b   #0,D5
+    beq     load_A0_REG
+    cmp.b   #1,D5
+    beq     load_A1_REG 
+    cmp.b   #2,D5
+    beq     load_A2_REG
+    cmp.b   #3,D5
+    beq     load_A3_REG
+    cmp.b   #4,D5
+    beq     load_A4_REG   
+    cmp.b   #5,D5
+    beq     load_A5_REG   
+    cmp.b   #6,D5
+    beq     load_A6_REG   
+    cmp.b   #7,D5
+    beq     load_A7_REG
+    
+    RTS 
+
+get_Dregister
+    cmp.b   #0,D5
+    beq     load_D0_REG
+    cmp.b   #1,D5
+    beq     load_D1_REG    
+    cmp.b   #2,D5
+    beq     load_D2_REG
+    cmp.b   #3,D5
+    beq     load_D3_REG
+    cmp.b   #4,D5
+    beq     load_D4_REG  
+    cmp.b   #5,D5
+    beq     load_D5_REG 
+    cmp.b   #6,D5
+    beq     load_D6_REG   
+    cmp.b   #7,D5
+    beq     load_D7_REG
+   
+    RTS
+    
+   
+get_immidiate   
+    move.l  (ADDR_START),D5  * get immidiate long   
+    RTS
+    
+    
+    
+    
+                                            ;PRINT OPCODE
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************        
+* ----------------------------------
+* **** Print Source/Destination ****
+* ----------------------------------
+* 3 bits should be in D4
+
+
+*print_source
+*
+*    cmp.b   #0,D4
+*    beq     data_register
+*    cmp.b   #1,D4
+*    beq     SHOW_ERROR     
+*    cmp.b   #2,D4
+*    beq     effective_address
+*    cmp.b   #3,D4
+*    beq     effective_address_increment
+*    cmp.b   #4,D4
+*    beq     effective_address_decrement
+*    cmp.b   #5,D4
+*    beq     effective_address *(d16,An) do we need to do this?
+*    cmp.b   #6,D4
+*    beq     effective_address *(d16,An,Xn) do we need to do this?  
+*    cmp.b   #7,D4
+*    beq     print_immidiate     
+*    
+*    RTS
+    
+data_register
+    lea         (A2),A1
+    move.b      #14,D0          * print register
+    trap        #15
+    RTS
+    
+effective_address
+    lea         PAREN_OPEN,A1
+    move.b      #14,D0          * print '('
+    trap        #15
+    
+    lea         (A2),A1
+    move.b      #14,D0          * print register
+    trap        #15
+    
+    lea         PAREN_CLOSE,A1
+    move.b      #14,D0          * print ')'
+    trap        #15
+    
+    RTS
+    
+effective_address_increment
+    lea         PAREN_OPEN,A1
+    move.b      #14,D0          * print '('
+    trap        #15
+    
+    lea         (A2),A1
+    move.b      #14,D0          * print register
+    trap        #15
+    
+    lea         PAREN_CLOSE,A1
+    move.b      #14,D0          * print ')'
+    trap        #15
+    
+    lea         PLUS,A1
+    move.b      #14,D0          * print '+'
+    trap        #15
+    
+    RTS
+
+effective_address_decrement
+    lea         MINUS,A1
+    move.b      #14,D0          * print '-'
+    trap        #15
+   
+    lea         PAREN_OPEN,A1
+    move.b      #14,D0          * print '('
+    trap        #15
+    
+    lea         (A2),A1
+    move.b      #14,D0          * print register
+    trap        #15  
+     
+    lea         PAREN_CLOSE,A1
+    move.b      #14,D0          * print ')'
+    trap        #15
+
+    RTS
+ 
+print_immidiate     * determine size of immidiate data
+    
+    bsr     print_hashtag
+    bsr     print_dollar
+    move.b  #16,D2
+    move.b  #15,D0
+    bsr     get_bits12_13
+    cmp.b   #$01,D4
+    beq     print_immidiate_B
+    cmp.b   #$03,D4
+    beq     print_immidiate_W
+    cmp.b   #$02,D4
+    bra     SHOW_ERROR
+    bra     show_error
+  
+print_immidiate_B   * print immidiate Byte
+    lsr.l   #8,D5
+    lsr.l   #8,D5
+    lsr.l   #8,D5
+
+    move.l  D5,D1    
+    trap    #15
+    RTS    
+
+print_immidiate_W   * print immidiate Word
+    lsr.l   #8,D5
+    lsr.l   #8,D5
+
+    move.l  D5,D1    
+    trap    #15 
+    RTS
+    
+print_immidiate_L   * print immidiate Long
+    move.l  D5,D1    
+    trap    #15  
+    RTS
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************    
+
+
+                                ;LOAD EFFECTIVE ADDRESS FOR PRINTING
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+* -------------------------
+* * Load register cString *
+* -------------------------
+* store register cString in A2 for printing
+load_A0_REG
+    lea     A0_REG,A2
+    RTS
+load_A1_REG
+    lea     A1_REG,A2  
+    RTS
+load_A2_REG
+    lea     A2_REG,A2
+    RTS
+load_A3_REG
+    lea     A3_REG,A2
+    RTS
+load_A4_REG
+    lea     A4_REG,A2
+    RTS
+load_A5_REG   
+    lea     A5_REG,A2
+    RTS
+load_A6_REG   
+    lea     A6_REG,A2
+    RTS
+load_A7_REG   
+    lea     A7_REG,A2
+    RTS
+   
+load_D0_REG
+    lea     D0_REG,A2
+    RTS
+load_D1_REG
+    lea     D1_REG,A2  
+    RTS
+load_D2_REG
+    lea     D2_REG,A2
+    RTS
+load_D3_REG
+    lea     D3_REG,A2
+    RTS
+load_D4_REG
+    lea     D4_REG,A2
+    RTS
+load_D5_REG   
+    lea     D5_REG,A2
+    RTS
+load_D6_REG   
+    lea     D6_REG,A2
+    RTS
+load_D7_REG   
+    lea     D7_REG,A2
+    RTS
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+
+
                                 ;PRINT IMMEDIATE BYTE,WORD,LONG
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
+COMPARE_SIZE1
+    CMP.W   #$1,D3
+    BEQ     PRINT_IMMEDIATE_BYTE
+    CMP.W   #$2,D3
+    BEQ     PRINT_IMMEDIATE_LONG
+    CMP.W   #$3,D3
+    BEQ     PRINT_IMMEDIATE_WORD
+    
+    
 PRINT_IMMEDIATE_BYTE
-    MOVE.B  (A2)+,D3
+    CLR.L   D3
+    MOVE.B  (A6)+,D3
     MOVE.B  D3,D4
     LSR.B   #4,D4
     BSR     PRINT_HEX_BYTE
@@ -1026,6 +1359,8 @@ HEX_ASCII
       DC.B    $46    
 
     END    START        ; last line of source
+
+
 
 
 
