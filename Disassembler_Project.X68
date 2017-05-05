@@ -102,8 +102,13 @@ LOOP_INPUT
     MOVE.W  #$1007,(A2)+
     MOVE.W  #$3007,(A2)+
     MOVE.W  #$2007,(A2)+
-    MOVE.L  #$060300FF,(A2)+
-    MOVE.W  #$4E71,(A2)+
+    MOVE.L  #$20387FFF,(A2)+
+    MOVE.L  #$38390000,(A2)+
+    MOVE.W  #$8000,(A2)+
+    MOVE.L  #$18BC00AB,(A2)+
+    *BSR     MOVE_MOVEA_
+    *JMP     STOP                    
+   
     
     
 
@@ -275,145 +280,39 @@ NOP_MOVEM_LEA_CLR_JSR_RTS_
 MOVE_MOVEA_                     ;BOOKMARK
     JSR     CLEAR_REGS
     MOVE.B  (A2),D2
-    JSR     S1
-    *JSR     LOAD_SIZE
+    JSR     S1              * Load size type 1
     MOVE.B  D2,SIZE
     JSR     CLEAR_REGS
     
     MOVE.B  (A2),D2
-    JSR     XN
-    MOVE.B  D2,DESTINATION_REG
+    JSR     XN                  
+    MOVE.B  D2,DESTINATION_REG  * Get destination register
     JSR     CLEAR_REGS
     
     MOVE.W  (A2),D4
     LSR.W   #$1,D4
     MOVE.B  D4,D2
     JSR     MO
-    MOVE.B  D2,DESTINATION_MODE
+    MOVE.B  D2,DESTINATION_MODE    * Get destination mode 
     JSR     CLEAR_REGS
     
     MOVE.W  (A2),D4
     LSL.W   #$2,D4
     MOVE.B  D4,D2
     JSR     MO
-    MOVE.B  D2,SOURCE_MODE
+    MOVE.B  D2,SOURCE_MODE  * Get source mode
     JSR     CLEAR_REGS
     
     MOVE.W  (A2),D4
     MOVE.B  D4,D2
     LSL.B   #$1,D2
     JSR     XN
-    MOVE.B  D2,SOURCE_REG
+    MOVE.B  D2,SOURCE_REG   * Get source register
     JSR     CLEAR_REGS
     
-    CMP.B   #$1,DESTINATION_MODE
+    CMP.B   #$1,DESTINATION_MODE * determine if MOVE or MOVEA
     BEQ     PRINT_MOVEA
     BRA     PRINT_MOVE
-
-PRINT_MOVEA
-    LEA     MOVEA_OP,A1      ;PRINTS MOVE
-    JSR     TASK14     
-    JSR     PRINT_S1        ;PRINTS .B,.W,.L
-    
-    
-    
-    JSR     CLEAR_REGS      ;CLEARS D2,D4
-    MOVE.B  SOURCE_MODE,D2  ;LOAD SOURCE MODE INTO D2
-    MOVE.B  SOURCE_REG,D4   ;LOAD SOURCE REG  INTO D4
-    JSR     PRINT_MODE_REG ;---------------
-    
-    JSR     PRINT_COMMA
-
-    JSR     CLEAR_REGS    
-    MOVE.B  DESTINATION_MODE,D2
-    MOVE.B  DESTINATION_REG,D4
-    JSR     PRINT_MODE_REG
-    JSR     PRINT_NEW_LINE
-    RTS
-
-PRINT_MOVE
-    LEA     MOVE_OP,A1      ;PRINTS MOVE
-    JSR     TASK14     
-    JSR     PRINT_S1        ;PRINTS .B,.W,.L
-    
-    
-    
-    JSR     CLEAR_REGS      ;CLEARS D2,D4
-    MOVE.B  SOURCE_MODE,D2  ;LOAD SOURCE MODE INTO D2
-    MOVE.B  SOURCE_REG,D4   ;LOAD SOURCE REG  INTO D4
-    JSR     PRINT_MODE_REG ;---------------
-    
-    JSR     PRINT_COMMA
-
-    JSR     CLEAR_REGS    
-    MOVE.B  DESTINATION_MODE,D2
-    MOVE.B  DESTINATION_REG,D4
-    JSR     PRINT_MODE_REG
-    JSR     PRINT_NEW_LINE
-    RTS
-    
-    
-    
-PRINT_MODE_REG
-    CMP     #$7,D2
-    BEQ     PRINT_ABSOLUTE_OR_IMMEDIATE
- 
-    MULS.W  #$30,D2
-    MULS.W  #$6,D4
-    ADD.W   D2,D4
-    LEA     ASCII_TABLE,A1
-    ADDA    D4,A1
-    JSR     TASK14
-    RTS
-FINISH_SOURCE
-    RTS
-
-PRINT_DESTINATION
-
-PRINT_ABSOLUTE_OR_IMMEDIATE
-    CLR.L       D3
-    MOVEA.L     A2,A6
-    ADDA.L      #$2,A6
- 
-    CMP.W   #$0,D4
-    BEQ     ABSOLUTE_SHORT
-    CMP.W   #$1,D4
-    BEQ     ABSOLUTE_LONG
-    CMP.W   #$4,D4
-    BEQ     IMMEDIATE
-
-ABSOLUTE_SHORT
-    JSR         PRINT_DOLLAR
-    JSR         PRINT_IMMEDIATE_WORD
-    RTS
-ABSOLUTE_LONG 
-    JSR         PRINT_DOLLAR
-    JSR         PRINT_IMMEDIATE_LONG
-    RTS
-IMMEDIATE
-    JSR         PRINT_HASHTAG
-    JSR         PRINT_DOLLAR
-    MOVEA.L     A2,A6
-    ADDA.L      #$2,A6
-    MOVE.W      SIZE,D3
-    JSR         COMPARE_SIZE1
-    RTS
-
-
-
-
-
-*    CLR.L       D6
-*    MOVE.W      (A6),D6
-*    MOVEA.L     #$5000,A6
-*    ROR.W       #$8,D6
-*    MOVE.B      D6,D7
-*    LSR.B       #$4,D7
-    ADDA        D7,A3
-    *MOVE.B      (A3),
-    
-    RTS
-    
    
 MOVEQ_
     RTS
@@ -448,6 +347,50 @@ BCC_
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
+                                          ;Op-Code SUBROUTINES
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+PRINT_MOVEA
+    LEA     MOVEA_OP,A1      ;PRINTS MOVEA
+    JSR     TASK14     
+    JSR     PRINT_S1        ;PRINTS .B,.W,.L
+    
+    
+    
+    JSR     CLEAR_REGS      * Load source mode and register for printing
+    MOVE.B  SOURCE_MODE,D2  
+    MOVE.B  SOURCE_REG,D4   
+    JSR     PRINT_MODE_REG 
+    
+    JSR     PRINT_COMMA
+
+    JSR     CLEAR_REGS          * Load distination mode and register for printing
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    RTS
+
+PRINT_MOVE
+    LEA     MOVE_OP,A1      ;PRINTS MOVE
+    JSR     TASK14     
+    JSR     PRINT_S1        ;PRINTS .B,.W,.L
+    
+    
+    
+    JSR     CLEAR_REGS      * Load source mode and register for printing
+    MOVE.B  SOURCE_MODE,D2  
+    MOVE.B  SOURCE_REG,D4   
+    JSR     PRINT_MODE_REG 
+    
+    JSR     PRINT_COMMA
+
+    JSR     CLEAR_REGS          * Load distination mode and register for printing
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    RTS
 
 
 
@@ -503,15 +446,49 @@ PRINT_LONG
     LEA     LONG_SIZE,A1
     JSR     TASK14
     BRA     DONE
-;----------------------------------------------------------------  
-
-
-LOAD_DESTINATION
-    CMP.B   #$0,D2
-    BEQ     DATA_REG
     
-DATA_REG
-;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   
+;----------------------------------------------------------------     
+
+PRINT_MODE_REG
+    CMP     #$7,D2
+    BEQ     PRINT_ABSOLUTE_OR_IMMEDIATE
+ 
+    MULS.W  #$30,D2 *Print from ASCII table
+    MULS.W  #$6,D4
+    ADD.W   D2,D4
+    LEA     ASCII_TABLE,A1
+    ADDA    D4,A1
+    JSR     TASK14
+    RTS
+
+PRINT_ABSOLUTE_OR_IMMEDIATE
+    CLR.L       D3
+    MOVEA.L     A2,A6
+    ADDA.L      #$2,A6
+ 
+    CMP.W   #$0,D4
+    BEQ     ABSOLUTE_SHORT
+    CMP.W   #$1,D4
+    BEQ     ABSOLUTE_LONG
+    CMP.W   #$4,D4
+    BEQ     IMMEDIATE
+
+ABSOLUTE_SHORT
+    JSR         PRINT_DOLLAR
+    JSR         PRINT_IMMEDIATE_WORD
+    RTS
+ABSOLUTE_LONG 
+    JSR         PRINT_DOLLAR
+    JSR         PRINT_IMMEDIATE_LONG
+    RTS
+IMMEDIATE
+    JSR         PRINT_HASHTAG
+    JSR         PRINT_DOLLAR
+    MOVEA.L     A2,A6
+    ADDA.L      #$2,A6
+    MOVE.W      SIZE,D3
+    JSR         COMPARE_SIZE1
+    RTS 
     
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -586,30 +563,7 @@ get_bits12_13
         lsr.w   #6,D4
         RTS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
-***************************************************************************************************
-
-
-
-
-       
-** -----------------------
-** **** MOVE or MOVEA ****
-** -----------------------
-*move_or_movea
-*    cmp.b   #$01,D4
-*    beq     print_moveA
-*    bra     print_move
-*    
-*print_moveA
-*    lea         MOVEA_OP,A1
-*    JSR         TASK14
-*    RTS
-*    
-*print_move
-*    lea         MOVE_OP,A1
-*    JSR         TASK14
-*    RTS
-*    
+***************************************************************************************************  
 
 
                                 ;PRINT IMMEDIATE BYTE,WORD,LONG
