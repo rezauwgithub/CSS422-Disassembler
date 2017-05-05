@@ -4,7 +4,7 @@
 * Date       : Sometime in the future, but now back in the present
 * Description: Taking back op-code from Skynet, one byte at a time
 *-----------------------------------------------------------
-    
+;8====D    
                                         ;CONSTANTS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -1330,6 +1330,7 @@ HEX_ASCII
       DC.B    $46    
 
     END    START        ; last line of source
+
 
 
 *~Font name~Courier New~
