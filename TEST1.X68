@@ -24,16 +24,21 @@
     MOVE.B  D6,D0
     MOVE.B  D7,D0
     
-    MOVEA.W #$8000,A0
-    MOVEA.L #$FFFF7FFF,A6
+    MOVEA.W #$7FFF,A0
+    MOVEA.L #$00007FFF,A6
     MOVE.W  $FFFF,D1
     
     ADD.B   D0,D2
     ADDA.W  #$4444,A5
     
+    ADDI.L  #$1234ABCD,D3
+    
     
     
 * Put variables and constants here
+
+
+
 
 
 
