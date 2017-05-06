@@ -86,7 +86,7 @@ LOOP_INPUT
 ***************************************************************************************************
 * Put program code here
     MOVE.L  #$00008000,START_ADDR
-    MOVE.L  #$00008038,END_ADDR
+    MOVE.L  #$0000803A,END_ADDR
     MOVEA.L START_ADDR,A0
     MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -288,7 +288,16 @@ MOVE_MOVEA_
     BRA     PRINT_MOVE
    
 MOVEQ_
-    RTS
+    MOVE.B  #$4,SIZETYPE
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,DESTINATION_REG
+    MOVE.B  #$0,DESTINATION_MODE
+    
+    MOVE.B  #$7,SOURCE_MODE
+    MOVE.B  #$4,SOURCE_REG
+    BRA     PRINT_MOVEQ
 ADD_ADDA_
     
     JSR     CLEAR_REGS
@@ -499,6 +508,30 @@ PRINT_ADDI
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
+PRINT_MOVEQ
+    LEA     MOVEQ_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S4
+    
+    JSR     PRINT_SPACE
+    JSR     PRINT_HASHTAG
+    JSR     PRINT_DOLLAR
+    
+    JSR     CLEAR_REGS
+    MOVEA.L A2,A6
+    MOVE.W  (A6),D3
+    LSL.W   #$8,D3
+    LSR.W   #$8,D3
+    JSR     BYPASS
+    
+    JSR     PRINT_COMMA
+    
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
                                           ;MODULAR SUBROUTINES
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -544,6 +577,10 @@ BITS_11_13
     LSR.W #$8,D2
     LSR.W #$5,D2
     RTS
+BITS_9_16
+    LSL.W #$8,D2
+    LSR.W #$8,D2
+    RTS
 BITS_14_16
     LSL.W #$8,D2
     LSL.W #$5,D2
@@ -575,6 +612,8 @@ PRINT_S3
     BEQ     PRINT_WORD
     CMP.B   #$1,SIZE
     BEQ     PRINT_LONG
+PRINT_S4
+    BRA     DONE
 DONE
     RTS
 PRINT_BYTE
@@ -607,7 +646,6 @@ PRINT_ABSOLUTE_OR_IMMEDIATE
     CLR.L       D3
     MOVEA.L     A2,A6
     ADDA.L      #$2,A6
- 
     CMP.W   #$0,D4
     BEQ     ABSOLUTE_SHORT
     CMP.W   #$1,D4
@@ -626,8 +664,6 @@ ABSOLUTE_LONG
 IMMEDIATE
     JSR         PRINT_HASHTAG
     JSR         PRINT_DOLLAR
-    MOVEA.L     A2,A6
-    ADDA.L      #$2,A6
     MOVE.B      SIZE,D3
     JSR         CLEAR_REGS
     MOVE.B      SIZETYPE,D2
@@ -689,6 +725,7 @@ COMPARE_SIZE3
 PRINT_IMMEDIATE_BYTE
     CLR.L   D3
     MOVE.B  (A6)+,D3
+BYPASS
     MOVE.B  D3,D4
     LSR.B   #4,D4
     BSR     PRINT_HEX_BYTE
@@ -699,16 +736,17 @@ PRINT_IMMEDIATE_BYTE
     RTS
 
 PRINT_IMMEDIATE_WORD
+    ADDA.L  #$2,A2
     BSR     PRINT_IMMEDIATE_BYTE
     BSR     PRINT_IMMEDIATE_BYTE
     RTS
 
 PRINT_IMMEDIATE_LONG
+    ADDA.L  #$4,A2
     BSR     PRINT_IMMEDIATE_BYTE
     BSR     PRINT_IMMEDIATE_BYTE
     BSR     PRINT_IMMEDIATE_BYTE
     BSR     PRINT_IMMEDIATE_BYTE
-    ADDA.W  #$2,A2
     RTS
 
 PRINT_HEX_BYTE
@@ -748,52 +786,52 @@ PRINT_HEX_BYTE
 
 PRINT_HEX_0
     LEA     HEX_0,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_1
     LEA     HEX_1,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_2
     LEA     HEX_2,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_3
     LEA     HEX_3,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_4
     LEA     HEX_4,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_5
     LEA     HEX_5,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_6
     LEA     HEX_6,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_7
     LEA     HEX_7,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_8
     LEA     HEX_8,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_9
     LEA     HEX_9,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_A
     LEA     HEX_A,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_B
     LEA     HEX_B,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_C
     LEA     HEX_C,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_D
     LEA     HEX_D,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_E       
     LEA     HEX_E,A1
-    BRA     PRINT_
+    BRA     TASK14
 PRINT_HEX_F
     LEA     HEX_F,A1
-    BRA     PRINT_
+    BRA     TASK14
 
                                            ;PRINT OTHER
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -829,14 +867,6 @@ print_L
     RTS 
     
 * --------------------
-* ****** Print *******
-* --------------------
-PRINT_
-    move.b  #14,D0
-    trap    #15
-    RTS
-
-* --------------------
 * * Print comma ', ' *
 * --------------------
 print_comma
@@ -867,10 +897,18 @@ print_dollar
 * ------------------
 print_new_line
     lea     NEW_LINE,A1
-    move.b  #14,D0
+    move.b  #13,D0
     trap    #15
     RTS
 
+* ------------------
+* * Print new line *
+* ------------------
+PRINT_SPACE
+    LEA     NEW_LINE,A1
+    MOVE.B  #14,D0
+    TRAP    #15
+    RTS
 **********************
 ****** ERRORS ********
 **********************
@@ -949,7 +987,7 @@ MINUS       DC.B    '-',0
 PAREN_OPEN  DC.B    '(',0
 PAREN_CLOSE DC.B    ')',0
 COMMA       DC.B    ',',0
-NEW_LINE    DC.B    ' ',CR,LF,0
+NEW_LINE    DC.B    '    ',0
 *--------------------OPCODES-------------------------------
 NOP_OP      DC.B    'NOP',0
 MOVE_OP     DC.B    'MOVE',0

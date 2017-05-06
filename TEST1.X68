@@ -32,10 +32,12 @@
     ADDA.W  #$4444,A5
     
     ADDI.L  #$1234ABCD,D3
+    MOVEQ   #$AB,D7
     
     
     
 * Put variables and constants here
+
 
 
 
