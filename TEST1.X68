@@ -28,9 +28,13 @@
     MOVEA.L #$FFFF7FFF,A6
     MOVE.W  $FFFF,D1
     
+    ADD.B   D0,D2
+    ADDA.W  #$4444,A5
+    
     
     
 * Put variables and constants here
+
 
 
 

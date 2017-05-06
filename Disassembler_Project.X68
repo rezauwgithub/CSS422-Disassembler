@@ -85,7 +85,9 @@ LOOP_INPUT
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 * Put program code here
-    MOVEA.L #$8000,A0
+    MOVE.L  #$00008000,START_ADDR
+    MOVE.L  #$00008032,END_ADDR
+    MOVEA.L START_ADDR,A0
     MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -245,42 +247,39 @@ ROTATEBYTE
     RTS
 MOVENEXT
     ADDA.L  #$2,A2
-    CLR.L   D2
+    JSR     CLEAR_REGS
+    CMPA.L  END_ADDR,A2
+    BGE     TERMINATE
     JMP     TESTLOOP
 
 NOP_MOVEM_LEA_CLR_JSR_RTS_   
     RTS
       
-MOVE_MOVEA_                     ;BOOKMARK
+MOVE_MOVEA_
+    MOVE.B  #$1,SIZETYPE                     ;BOOKMARK
     JSR     CLEAR_REGS
-    MOVE.B  (A2),D2
-    JSR     S1              * Load size type 1
+    MOVE.W  (A2),D2
+    JSR     BITS_3_4              * Load size type 1
     MOVE.B  D2,SIZE
     JSR     CLEAR_REGS
     
-    MOVE.B  (A2),D2
-    JSR     XN                  
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7                 
     MOVE.B  D2,DESTINATION_REG  * Get destination register
     JSR     CLEAR_REGS
     
-    MOVE.W  (A2),D4
-    LSR.W   #$1,D4
-    MOVE.B  D4,D2
-    JSR     MO
+    MOVE.W  (A2),D2
+    JSR     BITS_8_10
     MOVE.B  D2,DESTINATION_MODE    * Get destination mode 
     JSR     CLEAR_REGS
     
-    MOVE.W  (A2),D4
-    LSL.W   #$2,D4
-    MOVE.B  D4,D2
-    JSR     MO
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
     MOVE.B  D2,SOURCE_MODE  * Get source mode
     JSR     CLEAR_REGS
     
-    MOVE.W  (A2),D4
-    MOVE.B  D4,D2
-    LSL.B   #$1,D2
-    JSR     XN
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG   * Get source register
     JSR     CLEAR_REGS
     
@@ -291,17 +290,79 @@ MOVE_MOVEA_                     ;BOOKMARK
 MOVEQ_
     RTS
 ADD_ADDA_
-    * 1. get size
-    * 2. get source register
-    * 3. get opmode
-    * 4. get EA mode
-    *   - if EA mode is An(001), OPCODE = ADDA
-    * 5. get EA register
-    * 6. Print OPCODE 
-    * 7. Based on opmode:
-    *     - print source register, EA register or;
-    *     - print EA register, source register    
-    RTS
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_10
+    CMPI.B  #$3,D2
+    BEQ     ADDA_
+    MOVE.B  #$2,SIZETYPE
+    MOVE.B  D2,SIZE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_8
+    MOVE.B  D2,DIRECTION
+    CMPI.B  #$0,D2
+    BEQ     TO_DATA
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,SOURCE_REG
+    MOVE.B  #$0,SOURCE_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,DESTINATION_REG
+    BRA     PRINT_ADD
+TO_DATA
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,DESTINATION_REG
+    MOVE.B  #$0,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,SOURCE_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,SOURCE_REG
+    BRA     PRINT_ADD
+
+ADDA_
+    MOVE.B  #$3,SIZETYPE
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_8
+    MOVE.B  D2,SIZE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,DESTINATION_REG
+    MOVE.B  #$1,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,SOURCE_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,SOURCE_REG
+    BRA     PRINT_ADDA
 ADDI_
     RTS
 ADDQ_
@@ -343,7 +404,7 @@ PRINT_MOVEA
     MOVE.B  DESTINATION_REG,D4
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
-    RTS
+    JMP     MOVENEXT
 
 PRINT_MOVE
     LEA     MOVE_OP,A1      ;PRINTS MOVE
@@ -364,34 +425,96 @@ PRINT_MOVE
     MOVE.B  DESTINATION_REG,D4
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
-    RTS
+    JMP     MOVENEXT
 
+PRINT_ADD
+    LEA     ADD_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S2
+    
+    JSR     CLEAR_REGS      * Load source mode and register for printing
+    MOVE.B  SOURCE_MODE,D2  
+    MOVE.B  SOURCE_REG,D4   
+    JSR     PRINT_MODE_REG 
+    
+    JSR     PRINT_COMMA
 
+    JSR     CLEAR_REGS          * Load distination mode and register for printing
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+PRINT_ADDA
+    LEA     ADDA_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S3
+    
+    JSR     CLEAR_REGS      * Load source mode and register for printing
+    MOVE.B  SOURCE_MODE,D2  
+    MOVE.B  SOURCE_REG,D4   
+    JSR     PRINT_MODE_REG 
+    
+    JSR     PRINT_COMMA
+
+    JSR     CLEAR_REGS          * Load distination mode and register for printing
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
 
                                           ;MODULAR SUBROUTINES
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
-MO
-    LSR.B   #$5,D2
+BITS_3_4
+    LSL.W   #$2,D2
+    LSR.W   #$8,D2
+    LSR.W   #$6,D2
     RTS
-XN
-    LSL.B   #$4,D2
-    LSR.B   #$5,D2
+BITS_6
+    LSL.W   #$5,D2
+    LSR.W   #$8,D2
+    LSR.W   #$7,D2
     RTS
-S1          ;MOVE
-    LSR.B   #$4,D2
+BITS_5_7
+    LSL.W #$4,D2
+    LSR.W #$8,D2
+    LSR.W #$5,D2
     RTS
-S2          ;ADD
+BITS_8
+    LSL.W #$7,D2
+    LSR.W #$8,D2
+    LSR.W #$7,D2
     RTS
-S3          ;MOVEM
+BITS_10
+    LSL.W #$8,D2
+    LSL.W #$1,D2
+    LSR.W #$8,D2
+    LSR.W #$7,D2
     RTS
-D1          ;ADD
+BITS_8_10
+    LSL.W #$7,D2
+    LSR.W #$8,D2
+    LSR.W #$5,D2
     RTS
-D2          ;MOVEM
+BITS_9_10
+    LSL.W #$8,D2
+    LSR.W #$8,D2
+    LSR.W #$6,D2
     RTS
-D3          ;SHIFTS
+BITS_11_13
+    LSL.W #$8,D2
+    LSL.W #$2,D2
+    LSR.W #$8,D2
+    LSR.W #$5,D2
     RTS
-    
+BITS_14_16
+    LSL.W #$8,D2
+    LSL.W #$5,D2
+    LSR.W #$8,D2
+    LSR.W #$5,D2
+    RTS
 CLEAR_REGS
     CLR.L   D2
     CLR.L   D4
@@ -405,7 +528,18 @@ PRINT_S1
     BEQ     PRINT_WORD
     CMP.B   #$2,SIZE
     BEQ     PRINT_LONG
-
+PRINT_S2
+    CMP.B   #$0,SIZE
+    BEQ     PRINT_BYTE
+    CMP.B   #$1,SIZE
+    BEQ     PRINT_WORD
+    CMP.B   #$2,SIZE
+    BEQ     PRINT_LONG
+PRINT_S3
+    CMP.B   #$0,SIZE
+    BEQ     PRINT_WORD
+    CMP.B   #$1,SIZE
+    BEQ     PRINT_LONG
 DONE
     RTS
 PRINT_BYTE
@@ -419,8 +553,7 @@ PRINT_WORD
 PRINT_LONG
     LEA     LONG_SIZE,A1
     JSR     TASK14
-    BRA     DONE
-    
+    BRA     DONE  
 ;----------------------------------------------------------------     
 
 PRINT_MODE_REG
@@ -461,8 +594,23 @@ IMMEDIATE
     MOVEA.L     A2,A6
     ADDA.L      #$2,A6
     MOVE.B      SIZE,D3
+    JSR         CLEAR_REGS
+    MOVE.B      SIZETYPE,D2
+    CMPI.B      #$1,D2
+    BEQ         TO_COMPARE_S1
+    CMPI.B      #$2,D2
+    BEQ         TO_COMPARE_S2
+    CMPI.B      #$3,D2
+    BEQ         TO_COMPARE_S3
+TO_COMPARE_S1
     JSR         COMPARE_SIZE1
-    RTS 
+    RTS
+TO_COMPARE_S2
+    JSR         COMPARE_SIZE2
+    RTS
+TO_COMPARE_S3
+    JSR         COMPARE_SIZE3
+    RTS
     
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -471,71 +619,12 @@ IMMEDIATE
 
                                             ;GET SPECIFIC BITS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
-***************************************************************************************************
-* ---------------------   
-*** move bits to D4 ***
-* --------------------- 
-* get next 1 bit ** I think this is useless - Confirm/Delete? **
-next_1bit
-        move.w  D3,D4
-        lsr.w   #8,D4
-        lsr.w   #7,D4
-        RTS
-        
-* get mext 2 bits ** I think this is useless - Confirm/Delete? **
-next_2bit
-        move.w  D3,D4
-        lsr.w   #8,D4
-        lsr.w   #6,D4
-        RTS
-
-* get next 3 bits ** I think this is useless - Confirm/Delete? **
-next_3bit
-        move.w  D3,D4
-        lsr.w   #8,D4
-        lsr.w   #5,D4
-        RTS
-        
+***************************************************************************************************    
 * ----------------------        
 * * Get Specified Bits *
 * ---------------------- 
 * put bits in D4 register
-get_bits0_2
-        move.w  D3,D4
-        lsl.w   #8,D4
-        lsl.w   #5,D4
-        lsr.w   #5,D4
-        lsr.w   #8,D4
-        RTS
-        
-get_bits3_5
-        move.w  D3,D4
-        lsl.w   #8,D4
-        lsl.w   #2,D4
-        lsr.w   #5,D4
-        lsr.w   #8,D4
-        RTS
-        
-get_bits6_8
-        move.w  D3,D4
-        lsl.w   #7,D4
-        lsr.w   #5,D4
-        lsr.w   #8,D4
-        RTS
-        
-get_bits9_11
-        move.w  D3,D4
-        lsl.w   #4,D4
-        lsr.w   #8,D4
-        lsr.w   #5,D4
-        RTS
 
-get_bits12_13
-        move.w  D3,D4
-        lsl.w   #2,D4
-        lsr.w   #8,D4
-        lsr.w   #6,D4
-        RTS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************  
 
@@ -550,8 +639,18 @@ COMPARE_SIZE1
     BEQ     PRINT_IMMEDIATE_LONG
     CMP.W   #$3,D3
     BEQ     PRINT_IMMEDIATE_WORD
-    
-    
+COMPARE_SIZE2
+    CMP.W   #$0,D3
+    BEQ     PRINT_IMMEDIATE_WORD
+    CMP.W   #$1,D3
+    BEQ     PRINT_IMMEDIATE_WORD
+    CMP.W   #$2,D3
+    BEQ     PRINT_IMMEDIATE_LONG
+COMPARE_SIZE3
+    CMP.W   #$0,D3
+    BEQ     PRINT_IMMEDIATE_WORD
+    CMP.W   #$1,D3
+    BEQ     PRINT_IMMEDIATE_LONG
 PRINT_IMMEDIATE_BYTE
     CLR.L   D3
     MOVE.B  (A6)+,D3
@@ -574,6 +673,7 @@ PRINT_IMMEDIATE_LONG
     BSR     PRINT_IMMEDIATE_BYTE
     BSR     PRINT_IMMEDIATE_BYTE
     BSR     PRINT_IMMEDIATE_BYTE
+    ADDA.W  #$2,A2
     RTS
 
 PRINT_HEX_BYTE
@@ -778,6 +878,9 @@ TASK14
     MOVE.B  #14,D0
     TRAP    #15
     RTS
+TERMINATE
+    MOVE.B  #9,D0
+    TRAP    #15
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
@@ -810,7 +913,7 @@ PLUS        DC.B    '+',0
 MINUS       DC.B    '-',0
 PAREN_OPEN  DC.B    '(',0
 PAREN_CLOSE DC.B    ')',0
-COMMA       DC.B    ', ',0
+COMMA       DC.B    ',',0
 NEW_LINE    DC.B    ' ',CR,LF,0
 *--------------------OPCODES-------------------------------
 NOP_OP      DC.B    'NOP',0
@@ -840,9 +943,9 @@ BCC_OP      DC.B    'BCC',0
 JSR_OP      DC.B    'JSR',0
 RTS_OP      DC.B    'RTS',0
 *-------------------SIZE OF OP-----------------------------
-BYTE_SIZE   DC.B    '.B     ',0
-WORD_SIZE   DC.B    '.W     ',0
-LONG_SIZE   DC.B    '.L     ',0
+BYTE_SIZE   DC.B    '.B   ',0
+WORD_SIZE   DC.B    '.W   ',0
+LONG_SIZE   DC.B    '.L   ',0
 *--------------------REGISTERS-----------------------------
 *ADDRESS REGISTERS...
 A0_REG      DC.B    'A0',0
@@ -921,6 +1024,12 @@ SOURCE_REG              DS.B    1
 EA_MODE                 DS.B    1
 EA_REG                  DS.B    1
 OPMODE                  DS.B    1
+DIRECTION               DS.B    1
+SIZETYPE                DS.B    1
+
+
+START_ADDR              DS.L    1
+END_ADDR                DS.L    1
 
     ORG $6000
 ASCII_TABLE
@@ -990,6 +1099,7 @@ HEX_ASCII
       DC.B    $46    
 
     END    START        ; last line of source
+
 
 
 
