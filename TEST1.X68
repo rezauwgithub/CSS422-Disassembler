@@ -35,8 +35,13 @@
     MOVEQ   #$AB,D7
     ADDQ.W  #$6,D3
     
+    SUB.W   D3,$5000
+    
     
 * Put variables and constants here
+
+
+
 
 
 
