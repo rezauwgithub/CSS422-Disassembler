@@ -635,6 +635,7 @@ BCC_
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 PRINT_MOVEA
+    JSR     PRINT_CURRENT_ADDR
     LEA     MOVEA_OP,A1      ;PRINTS MOVEA
     JSR     TASK14     
     JSR     PRINT_S1        ;PRINTS .B,.W,.L
@@ -656,6 +657,7 @@ PRINT_MOVEA
     JMP     MOVENEXT
 
 PRINT_MOVE
+    JSR     PRINT_CURRENT_ADDR
     LEA     MOVE_OP,A1      ;PRINTS MOVE
     JSR     TASK14     
     JSR     PRINT_S1        ;PRINTS .B,.W,.L
@@ -677,6 +679,7 @@ PRINT_MOVE
     JMP     MOVENEXT
 
 PRINT_ADD
+    JSR     PRINT_CURRENT_ADDR
     LEA     ADD_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
@@ -695,6 +698,7 @@ PRINT_ADD
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
 PRINT_ADDA
+    JSR     PRINT_CURRENT_ADDR
     LEA     ADDA_OP,A1
     JSR     TASK14
     JSR     PRINT_S3
@@ -713,6 +717,7 @@ PRINT_ADDA
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
 PRINT_ADDI
+    JSR     PRINT_CURRENT_ADDR
     LEA     ADDI_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
@@ -731,6 +736,7 @@ PRINT_ADDI
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
 PRINT_MOVEQ
+    JSR     PRINT_CURRENT_ADDR
     LEA     MOVEQ_OP,A1
     JSR     TASK14
     JSR     PRINT_S4
@@ -754,6 +760,7 @@ PRINT_MOVEQ
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
 PRINT_ADDQ
+    JSR     PRINT_CURRENT_ADDR
     LEA     ADDQ_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
@@ -776,6 +783,7 @@ PRINT_ADDQ
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT 
 PRINT_SUB
+    JSR     PRINT_CURRENT_ADDR
     LEA     SUB_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
@@ -794,6 +802,7 @@ PRINT_SUB
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
 PRINT_AND
+    JSR     PRINT_CURRENT_ADDR
     LEA     AND_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
@@ -812,6 +821,7 @@ PRINT_AND
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
 PRINT_MULS
+    JSR     PRINT_CURRENT_ADDR
     LEA     MULS_OP,A1
     JSR     TASK14
     JSR     PRINT_S4
@@ -832,6 +842,7 @@ PRINT_MULS
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
 PRINT_OR
+    JSR     PRINT_CURRENT_ADDR
     LEA     OR_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
@@ -850,6 +861,7 @@ PRINT_OR
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
 PRINT_DIVU
+    JSR     PRINT_CURRENT_ADDR
     LEA     DIVU_OP,A1
     JSR     TASK14
     JSR     PRINT_S4
@@ -870,6 +882,7 @@ PRINT_DIVU
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
 PRINT_LEA
+    JSR     PRINT_CURRENT_ADDR
     LEA     LEA_OP,A1
     JSR     TASK14
     JSR     PRINT_S4
@@ -889,6 +902,36 @@ PRINT_LEA
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT 
+    
+PRINT_CURRENT_ADDR
+    JSR     CLEAR_REGS
+    MOVEA.L  #$00004000,A1
+    MOVE.L  A1,A3
+    MOVE.L  A2,A6
+    MOVE.L  #$4,D7
+    MOVE.L  A6,D4
+    MOVE.L  #$00004500,A4
+    MOVE.L  D4,(A4)
+CURR_ADDR_LOOP
+    LEA     HEX_ASCII,A5
+    CMPI.B  #$0,D7
+    BEQ     FINISH_CURR_ADDR
+    MOVE.B  (A4),D2
+    LSR.B   #$4,D2
+    MOVE.B  (0,A5,D2),(A3)+
+    MOVE.B  (A4),D2
+    LSL.B   #$4,D2
+    LSR.B   #$4,D2
+    LEA     HEX_ASCII,A5
+    MOVE.B  (0,A5,D2),(A3)+
+    ADDA    #$1,A4
+    SUBI    #$1,D7
+    BRA     CURR_ADDR_LOOP
+FINISH_CURR_ADDR
+    MOVE.B  #$00,(A3)+
+    JSR     TASK14
+    JSR     PRINT_SPACE
+    RTS
                                           ;MODULAR SUBROUTINES
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -1456,6 +1499,7 @@ EA_REG                  DS.B    1
 OPMODE                  DS.B    1
 DIRECTION               DS.B    1
 SIZETYPE                DS.B    1
+CURRENT_ADDR            DS.L    1
 
 
 START_ADDR              DS.L    1
