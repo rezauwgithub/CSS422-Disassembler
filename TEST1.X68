@@ -33,10 +33,11 @@
     
     ADDI.L  #$1234ABCD,D3
     MOVEQ   #$AB,D7
-    
+    ADDQ.W  #$6,D3
     
     
 * Put variables and constants here
+
 
 
 

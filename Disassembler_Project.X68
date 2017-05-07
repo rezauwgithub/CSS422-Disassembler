@@ -86,7 +86,7 @@ LOOP_INPUT
 ***************************************************************************************************
 * Put program code here
     MOVE.L  #$00008000,START_ADDR
-    MOVE.L  #$0000803A,END_ADDR
+    MOVE.L  #$0000803C,END_ADDR
     MOVEA.L START_ADDR,A0
     MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -393,7 +393,26 @@ ADDI_
     MOVE.B  D2,DESTINATION_REG
     BRA     PRINT_ADDI
 ADDQ_
-    RTS
+    MOVE.B  #$2,SIZETYPE
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_10
+    MOVE.B  D2,SIZE
+  
+    JSR     CLEAR_REGS
+    MOVE.B  #$7,SOURCE_MODE
+    MOVE.B  #$4,SOURCE_REG
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,DESTINATION_REG
+    BRA     PRINT_ADDQ
 SUB_
     RTS
 MULS_AND_
@@ -518,10 +537,9 @@ PRINT_MOVEQ
     JSR     PRINT_DOLLAR
     
     JSR     CLEAR_REGS
-    MOVEA.L A2,A6
-    MOVE.W  (A6),D3
-    LSL.W   #$8,D3
-    LSR.W   #$8,D3
+    MOVE.W  (A2),D2
+    JSR     BITS_9_16
+    MOVE.B  D2,D3
     JSR     BYPASS
     
     JSR     PRINT_COMMA
@@ -532,6 +550,28 @@ PRINT_MOVEQ
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
+PRINT_ADDQ
+    LEA     ADDQ_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S2
+    
+    JSR     PRINT_HASHTAG
+    JSR     PRINT_DOLLAR
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,D3
+    JSR     BYPASS
+    
+    JSR     PRINT_COMMA
+    
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT 
                                           ;MODULAR SUBROUTINES
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
