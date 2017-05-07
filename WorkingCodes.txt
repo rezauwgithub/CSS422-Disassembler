@@ -1,0 +1,6 @@
+-MOVE
+-MOVEA
+-MOVEQ
+-ADD
+-ADDI
+-ADDA
