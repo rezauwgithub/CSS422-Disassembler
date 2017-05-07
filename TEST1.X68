@@ -39,8 +39,11 @@
     MULS    #$0000FFFF,D0
     AND.W     #$44FF,D4
     
+    OR.L    #$ABCD1234,D0
+    DIVU    $FFFF5000,D4
     
 * Put variables and constants here
+
 
 
 

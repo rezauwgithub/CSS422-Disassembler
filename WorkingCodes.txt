@@ -8,3 +8,5 @@
 -SUB
 -MULS
 -AND
+-DIVU
+-OR

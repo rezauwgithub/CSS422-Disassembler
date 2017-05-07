@@ -86,7 +86,7 @@ LOOP_INPUT
 ***************************************************************************************************
 * Put program code here
     MOVE.L  #$00008000,START_ADDR
-    MOVE.L  #$00008048,END_ADDR
+    MOVE.L  #$00008054,END_ADDR
     MOVEA.L START_ADDR,A0
     MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ CASE9
 ;----------------------    
     CMP.L   #$8,D2
     BNE     CASE10
-    JSR     SUB_
+    JSR     OR_DIVU_
     JMP     MOVENEXT
 ;----------------------
 
@@ -298,8 +298,7 @@ MOVEQ_
     MOVE.B  #$7,SOURCE_MODE
     MOVE.B  #$4,SOURCE_REG
     BRA     PRINT_MOVEQ
-ADD_ADDA_
-    
+ADD_ADDA_    
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
     JSR     BITS_9_10
@@ -531,7 +530,74 @@ MULS_
     MOVE.B  D2,SOURCE_REG
     BRA     PRINT_MULS
 OR_DIVU_
-    RTS
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_10
+    CMPI    #$3,D2
+    BEQ     DIVU_
+    
+    MOVE.B  #$2,SIZETYPE
+    MOVE.B  D2,SIZE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_8
+    MOVE.B  D2,DIRECTION
+    CMPI.B  #$0,D2
+    BEQ     TO_DATA_OR
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,SOURCE_REG
+    MOVE.B  #$0,SOURCE_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,DESTINATION_REG
+    BRA     PRINT_OR
+    
+TO_DATA_OR
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,DESTINATION_REG
+    MOVE.B  #$0,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,SOURCE_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,SOURCE_REG
+    BRA     PRINT_OR 
+DIVU_
+    MOVE.B  #$4,SIZETYPE
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,DESTINATION_REG
+    MOVE.B  #$0,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,SOURCE_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,SOURCE_REG
+    BRA     PRINT_DIVU
 LSd_ASd_ROd_
     RTS
 CMP_
@@ -723,6 +789,44 @@ PRINT_AND
     JMP     MOVENEXT
 PRINT_MULS
     LEA     MULS_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S4
+    
+    JSR     PRINT_SPACE
+    
+    JSR     CLEAR_REGS
+    MOVE.B  SOURCE_MODE,D2
+    MOVE.B  SOURCE_REG,D4
+    JSR     PRINT_MODE_REG
+    
+    JSR     PRINT_COMMA
+    
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+PRINT_OR
+    LEA     OR_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S2
+    
+    JSR     CLEAR_REGS      * Load source mode and register for printing
+    MOVE.B  SOURCE_MODE,D2  
+    MOVE.B  SOURCE_REG,D4   
+    JSR     PRINT_MODE_REG 
+    
+    JSR     PRINT_COMMA
+
+    JSR     CLEAR_REGS          * Load distination mode and register for printing
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+PRINT_DIVU
+    LEA     DIVU_OP,A1
     JSR     TASK14
     JSR     PRINT_S4
     
@@ -1382,6 +1486,7 @@ HEX_ASCII
       DC.B    $46    
 
     END    START        ; last line of source
+
 
 
 
