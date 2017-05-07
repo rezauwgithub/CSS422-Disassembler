@@ -36,9 +36,14 @@
     ADDQ.W  #$6,D3
     
     SUB.W   D3,$5000
+    MULS    #$0000FFFF,D0
+    AND.W     #$44FF,D4
     
     
 * Put variables and constants here
+
+
+
 
 
 
