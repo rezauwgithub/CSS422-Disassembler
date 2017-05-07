@@ -86,7 +86,7 @@ LOOP_INPUT
 ***************************************************************************************************
 * Put program code here
     MOVE.L  #$00008000,START_ADDR
-    MOVE.L  #$0000803C,END_ADDR
+    MOVE.L  #$0000803E,END_ADDR
     MOVEA.L START_ADDR,A0
     MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -313,7 +313,7 @@ ADD_ADDA_
     JSR     BITS_8
     MOVE.B  D2,DIRECTION
     CMPI.B  #$0,D2
-    BEQ     TO_DATA
+    BEQ     TO_DATA_ADD
     
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
@@ -331,7 +331,7 @@ ADD_ADDA_
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
     BRA     PRINT_ADD
-TO_DATA
+TO_DATA_ADD
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
     JSR     BITS_5_7
@@ -414,7 +414,52 @@ ADDQ_
     MOVE.B  D2,DESTINATION_REG
     BRA     PRINT_ADDQ
 SUB_
-    RTS
+    MOVE.B  #$2,SIZETYPE
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_10
+    MOVE.B  D2,SIZE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_8
+    MOVE.B  D2,DIRECTION
+    CMPI.B  #$0,D2
+    BEQ     TO_DATA_SUB
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,SOURCE_REG
+    MOVE.B  #$0,SOURCE_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,DESTINATION_REG
+    BRA     PRINT_SUB
+TO_DATA_SUB
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,DESTINATION_REG
+    MOVE.B  #$0,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,SOURCE_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,SOURCE_REG
+    BRA     PRINT_SUB
 MULS_AND_
     RTS
 OR_DIVU_
@@ -572,6 +617,25 @@ PRINT_ADDQ
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT 
+PRINT_SUB
+    LEA     SUB_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S2
+    
+    JSR     CLEAR_REGS      * Load source mode and register for printing
+    MOVE.B  SOURCE_MODE,D2  
+    MOVE.B  SOURCE_REG,D4   
+    JSR     PRINT_MODE_REG 
+    
+    JSR     PRINT_COMMA
+
+    JSR     CLEAR_REGS          * Load distination mode and register for printing
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+    
                                           ;MODULAR SUBROUTINES
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
