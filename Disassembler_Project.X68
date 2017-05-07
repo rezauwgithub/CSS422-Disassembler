@@ -86,7 +86,7 @@ LOOP_INPUT
 ***************************************************************************************************
 * Put program code here
     MOVE.L  #$00008000,START_ADDR
-    MOVE.L  #$00008054,END_ADDR
+    MOVE.L  #$0000805A,END_ADDR
     MOVEA.L START_ADDR,A0
     MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -252,9 +252,33 @@ MOVENEXT
     BGE     TERMINATE
     JMP     TESTLOOP
 
-NOP_MOVEM_LEA_CLR_JSR_RTS_   
-    RTS
-      
+NOP_MOVEM_LEA_CLR_JSR_RTS_
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_8_10
+    CMPI    #$7,D2
+    BEQ     LEA_
+
+
+
+LEA_
+    MOVE.B  #$4,SIZETYPE
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,DESTINATION_REG
+    MOVE.B  #$1,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,SOURCE_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,SOURCE_REG
+    BRA     PRINT_LEA
 MOVE_MOVEA_
     MOVE.B  #$1,SIZETYPE                     ;BOOKMARK
     JSR     CLEAR_REGS
@@ -845,7 +869,26 @@ PRINT_DIVU
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
+PRINT_LEA
+    LEA     LEA_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S4
     
+    JSR     PRINT_SPACE
+    
+    JSR     CLEAR_REGS
+    MOVE.B  SOURCE_MODE,D2
+    MOVE.B  SOURCE_REG,D4
+    JSR     PRINT_MODE_REG
+    
+    JSR     PRINT_COMMA
+    
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT 
                                           ;MODULAR SUBROUTINES
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -1486,6 +1529,7 @@ HEX_ASCII
       DC.B    $46    
 
     END    START        ; last line of source
+
 
 
 

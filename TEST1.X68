@@ -41,8 +41,11 @@
     
     OR.L    #$ABCD1234,D0
     DIVU    $FFFF5000,D4
+    LEA     $0000FFFF,A6
     
 * Put variables and constants here
+
+
 
 
 
