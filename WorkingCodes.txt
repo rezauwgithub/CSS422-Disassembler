@@ -6,3 +6,5 @@
 -ADDA
 -ADDQ
 -SUB
+-MULS
+-AND
