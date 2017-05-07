@@ -5,3 +5,4 @@
 -ADDI
 -ADDA
 -ADDQ
+-SUB
