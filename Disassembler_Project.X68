@@ -7,17 +7,22 @@
                                         ;CONSTANTS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
-CR          EQU $0D
-LF          EQU $0A 
+CR          		        EQU $0D
+LF          		        EQU $0A 
                  
-ADDR_START  EQU $1002
-ADDR_END    EQU $1003
+DEFAULT_ADDR_START  		EQU $1002
+DEFAULT_ADDR_END    		EQU $1003
+
+MIN_ADDR					EQU	$00001000
+MAX_ADDR					EQU	$000FFFFF
+
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
     INCLUDE TEST1.X68
     ORG    $1000
 START:
     MEMORY READ  $006000,$0060EF
+    
 
                                 ;HOW TO USE ASCII TABLE TO PRINT
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,43 +43,83 @@ START:
 ***************************************************************************************************
 
 
-                                        ;User Input
-;///////////////////////////////////////////////////////////////////////////////////////////////////
-***************************************************************************************************
+
+
+*
+*MAIN
+*        JSR         DISPLAY_WELCOME_MSG
+*        JSR         GET_START_ADDRESS
+*        JSR         GET_END_ADDRESS  
+*
+*
+*  
+*
+*
+*                                        ;I/O
+*;///////////////////////////////////////////////////////////////////////////////////////////////////
+****************************************************************************************************
+*DISPLAY_WELCOME_MSG
+*    LEA             WELCOME_MSG,A1
+*    MOVE.B          #13,D0
+*    TRAP            #15
+*    
+*    RTS             
+*    
+*    
+*    
 LOOP_INPUT
-
-* Prompt the user for the starting address.
-* After user enters the starting address, verify it is valid.
-* If invalid, prompt the user for the starting address again.
-
-*   LEA			,A1
-*	MOVE.B		#14,D0
-*	TRAP		#15
-*	
-*	MOVE.B		#4,D0
-*	TRAP		#15
-*	
-*	CMP.B		$00002000,D1
-*	BLT			INVALID_INPUT_DETECTED
-*	CMP.B	 	$000FFFFF,D1
-*	BGT			INVALID_INPUT_DETECTED
+*
+*GET_START_ADDRESS
+*    LEA				ASK_FOR_STARTING_ADDRESS_MSG,A1
+*	MOVE.B			#13,D0
+*	TRAP			#15
 *	
 *	
-*	MOVE.B		D1,D4	;Save the starting address
-	
-
-* Now prompt the user for the ending address.
-* After user enters the ending address, verify it is valid.
-* If invalid, prompt the user for the ending address again.
-
-*	LEA			USER_INPUT2
-
-
-
-
-
-;///////////////////////////////////////////////////////////////////////////////////////////////////
-***************************************************************************************************
+*	* Capture user entry string
+*	MOVE.B			#2,D0
+*	TRAP			#15
+*	
+*	
+*	* If bad entry, loop GET_START_ADDRESS
+*	CMP.L			MIN_ADDR,D1
+*	BLT				GET_START_ADDRESS
+*	CMP.L			MAX_ADDR,D1
+*	BGT				GET_START_ADDRESS
+*	
+*	
+*	* Save the address
+*	MOVEA.L			A1,A0
+*	RTS
+*	
+*	
+*
+*	
+*GET_END_ADDRESS
+*	LEA				ASK_FOR_ENDING_ADDRESS_MSG,A1
+*	MOVE.B			#13,D0
+*	TRAP			#15
+*	
+*	
+*	* Capture user entry string
+*	MOVE.B			#2,D0
+*	TRAP			#15
+*	
+*	
+*	* If bad entry, loop GET_END_ADDRESS
+*	CMP.L			(A5),D1
+*	BLT				GET_END_ADDRESS
+*	CMP.L			MAX_ADDR,D1
+*	BGT				GET_END_ADDRESS
+*
+*	
+*
+*
+*	
+*
+*
+*
+*;///////////////////////////////////////////////////////////////////////////////////////////////////
+****************************************************************************************************
 
 
 
@@ -85,10 +130,10 @@ LOOP_INPUT
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 * Put program code here
-    MOVE.L  #$00008000,START_ADDR
-    MOVE.L  #$0000805A,END_ADDR
-    MOVEA.L START_ADDR,A0
-    MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
+   MOVE.L  #$00008000,START_ADDR
+   MOVE.L  #$0000805A,END_ADDR
+   MOVEA.L START_ADDR,A0
+   MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
@@ -1239,66 +1284,66 @@ PRINT_HEX_F
 * ----------------------------
 * print length (.B | .W | .L) 
 * ----------------------------
-print_length
-    cmp.b   #$01,D4
-    beq     print_B
-    cmp.b   #$03,D4
-    beq     print_W
-    bra     SHOW_ERROR
-    beq     print_L
-    bra     show_error
+PRINT_LENGTH
+    CMP.B   #$01,D4
+    BEQ     PRINT_B
+    CMP.B   #$03,D4
+    BEQ     PRINT_W
+    BRA     SHOW_ERROR
+    BEQ     PRINT_L
+    BRA     show_error
     
-print_B
-    lea         BYTE_SIZE,A1
-    move.b      #14,D0          
-    trap        #15    
+PRINT_B
+    LEA         BYTE_SIZE,A1
+    MOVE.B      #14,D0          
+    TRAP        #15    
     RTS
     
-print_W
-    lea         WORD_SIZE,A1
-    move.b      #14,D0         
-    trap        #15
+PRINT_W
+    LEA         WORD_SIZE,A1
+    MOVE.B      #14,D0         
+    TRAP        #15
     RTS 
 
-print_L
-    lea         LONG_SIZE,A1
-    move.b      #14,D0         
-    trap        #15
+PRINT_L
+    LEA         LONG_SIZE,A1
+    MOVE.B      #14,D0         
+    TRAP        #15
     RTS 
     
 * --------------------
 * * Print comma ', ' *
 * --------------------
-print_comma
-    lea     COMMA,A1
+PRINT_COMMA
+    LEA     COMMA,A1
     JSR     TASK14
     RTS
     
 * ---------------------
 * ** Print hashtag # **
 * ---------------------
-print_hashtag
-    lea     HASHTAG,A1
-    move.b  #14,D0
-    trap    #15
+PRINT_HASHTAG
+    LEA     HASHTAG,A1
+    MOVE.B  #14,D0
+    TRAP    #15
     RTS
     
 * ---------------------
 * ** Print dollar $ **
 * ---------------------
-print_dollar
-    lea     DOLLAR,A1
-    move.b  #14,D0
-    trap    #15
+PRINT_DOLLAR
+    LEA     DOLLAR,A1
+    MOVE.B  #14,D0
+    TRAP    #15
     RTS
     
 * ------------------
 * * Print new line *
 * ------------------
-print_new_line
-    lea     NEW_LINE,A1
-    move.b  #13,D0
-    trap    #15
+PRINT_NEW_LINE
+    LEA     NEW_LINE,A1
+    MOVE.B  #13,D0
+    TRAP    #15
     RTS
 
 * ------------------
@@ -1320,19 +1365,19 @@ SHOW_ERROR
 * **** Show Error ****      // TO DO: Come up with more descriptive errors
 * --------------------
 SHOW_ERROR
-    lea     ERROR,A1
-    move.b  #14,D0
-    trap    #15
-    bra     TESTLOOP       
+    LEA     ERROR,A1
+    MOVE.B  #14,D0
+    TRAP    #15
+    BRA     TESTLOOP       
 
 * --------------------------------------
 * **** Invalid User Input Detected ****
 * --------------------------------------
 INVALID_INPUT_DETECTED
-    *lea     INVALID,A1
-    move.b  #14,D0
-    trap    #15
-    bra     LOOP_INPUT       
+    *LEA     INVALID,A1
+    MOVE.B  #14,D0
+    TRAP    #15
+    BRA     LOOP_INPUT       
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
@@ -1370,15 +1415,14 @@ TERMINATE
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
-
-STOP
-STARTING_ADDRESS_ENTERED	DC.B    'Please specify the starting address',0
-ENDING_ADDRESS_ENTERED		DC.B    'Please specify the ending address',0
-INVALID_USER_INPUT			DC.B	'Please enter a valid address ($00002000 - $000FFFFF)',0		 
-
 * Put variables and constants here
-USER_INPUT1  DC.B    'Please specify beginning address',0
-USER_INPUT2  DC.B    'Please specify ending address',0
+
+WELCOME_MSG						DC.B	'Welcome to our Disassembler!',0
+ASK_FOR_STARTING_ADDRESS_MSG	DC.B    'PLEAse specify the starting address',0
+ASK_FOR_ENDING_ADDRESS_MSG		DC.B    'PLEAse specify the ending address',0
+INVALID_USER_INPUT_MSG			DC.B	'PLEAse enter a valid address ($00002000 - $000FFFFF)',0		 
+
+
 *----------------------------------------------------------
 DOLLAR      DC.B    '$',0
 HASHTAG     DC.B    '#',0
@@ -1576,20 +1620,7 @@ HEX_ASCII
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 *~Font name~Courier New~
-*~Font size~12~
+*~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
