@@ -11,3 +11,4 @@
 -DIVU
 -OR
 -LEA
+-CMP

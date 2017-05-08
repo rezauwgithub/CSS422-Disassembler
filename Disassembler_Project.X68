@@ -131,7 +131,7 @@ LOOP_INPUT
 ***************************************************************************************************
 * Put program code here
    MOVE.L  #$00008000,START_ADDR
-   MOVE.L  #$0000805A,END_ADDR
+   MOVE.L  #$00008060,END_ADDR
    MOVEA.L START_ADDR,A0
    MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -296,16 +296,12 @@ MOVENEXT
     CMPA.L  END_ADDR,A2
     BGE     TERMINATE
     JMP     TESTLOOP
-
 NOP_MOVEM_LEA_CLR_JSR_RTS_
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
     JSR     BITS_8_10
     CMPI    #$7,D2
     BEQ     LEA_
-
-
-
 LEA_
     MOVE.B  #$4,SIZETYPE
     JSR     CLEAR_REGS
@@ -670,7 +666,28 @@ DIVU_
 LSd_ASd_ROd_
     RTS
 CMP_
-    RTS
+    MOVE.B  #$2,SIZETYPE
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_10
+    MOVE.B  D2,SIZE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,DESTINATION_REG
+    MOVE.B  #$0,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,SOURCE_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,SOURCE_REG
+    BRA     PRINT_CMP 
 BCC_
     RTS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -684,8 +701,6 @@ PRINT_MOVEA
     LEA     MOVEA_OP,A1      ;PRINTS MOVEA
     JSR     TASK14     
     JSR     PRINT_S1        ;PRINTS .B,.W,.L
-    
-    
     
     JSR     CLEAR_REGS      * Load source mode and register for printing
     MOVE.B  SOURCE_MODE,D2  
@@ -722,7 +737,6 @@ PRINT_MOVE
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
-
 PRINT_ADD
     JSR     PRINT_CURRENT_ADDR
     LEA     ADD_OP,A1
@@ -947,7 +961,25 @@ PRINT_LEA
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT 
+PRINT_CMP
+    JSR     PRINT_CURRENT_ADDR
+    LEA     CMP_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S2
     
+    JSR     CLEAR_REGS
+    MOVE.B  SOURCE_MODE,D2
+    MOVE.B  SOURCE_REG,D4
+    JSR     PRINT_MODE_REG
+    
+    JSR     PRINT_COMMA
+    
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT   
 PRINT_CURRENT_ADDR
     JSR     CLEAR_REGS
     MOVEA.L  #$00004000,A1
@@ -1035,8 +1067,7 @@ BITS_14_16
 CLEAR_REGS
     CLR.L   D2
     CLR.L   D4
-    RTS
-    
+    RTS 
 ;----------------------------------------------------------------   
 PRINT_S1
     CMP.B   #$1,SIZE
@@ -1074,11 +1105,9 @@ PRINT_LONG
     JSR     TASK14
     BRA     DONE  
 ;----------------------------------------------------------------     
-
 PRINT_MODE_REG
     CMP     #$7,D2
     BEQ     PRINT_ABSOLUTE_OR_IMMEDIATE
- 
     MULS.W  #$30,D2 *Print from ASCII table
     MULS.W  #$6,D4
     ADD.W   D2,D4
@@ -1086,7 +1115,6 @@ PRINT_MODE_REG
     ADDA    D4,A1
     JSR     TASK14
     RTS
-
 PRINT_ABSOLUTE_OR_IMMEDIATE
     CLR.L       D3
     MOVEA.L     A2,A6
@@ -1097,7 +1125,6 @@ PRINT_ABSOLUTE_OR_IMMEDIATE
     BEQ     ABSOLUTE_LONG
     CMP.W   #$4,D4
     BEQ     IMMEDIATE
-
 ABSOLUTE_SHORT
     JSR         PRINT_DOLLAR
     JSR         PRINT_IMMEDIATE_WORD
@@ -1127,7 +1154,6 @@ TO_COMPARE_S2
 TO_COMPARE_S3
     JSR         COMPARE_SIZE3
     RTS
-    
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
@@ -1179,13 +1205,11 @@ BYPASS
     LSR.B   #4,D4
     BSR     PRINT_HEX_BYTE
     RTS
-
 PRINT_IMMEDIATE_WORD
     ADDA.L  #$2,A2
     BSR     PRINT_IMMEDIATE_BYTE
     BSR     PRINT_IMMEDIATE_BYTE
     RTS
-
 PRINT_IMMEDIATE_LONG
     ADDA.L  #$4,A2
     BSR     PRINT_IMMEDIATE_BYTE
@@ -1193,7 +1217,6 @@ PRINT_IMMEDIATE_LONG
     BSR     PRINT_IMMEDIATE_BYTE
     BSR     PRINT_IMMEDIATE_BYTE
     RTS
-
 PRINT_HEX_BYTE
     CMP.B   #$00,D4
     BEQ     PRINT_HEX_0
@@ -1228,7 +1251,6 @@ PRINT_HEX_BYTE
     CMP.B   #$0F,D4
     BEQ     PRINT_HEX_F
     BRA     SHOW_ERROR
-
 PRINT_HEX_0
     LEA     HEX_0,A1
     BRA     TASK14
@@ -1277,7 +1299,6 @@ PRINT_HEX_E
 PRINT_HEX_F
     LEA     HEX_F,A1
     BRA     TASK14
-
                                            ;PRINT OTHER
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -1620,7 +1641,9 @@ HEX_ASCII
 
 
 
+
+
 *~Font name~Courier New~
-*~Font size~10~
+*~Font size~12~
 *~Tab type~1~
 *~Tab size~4~
