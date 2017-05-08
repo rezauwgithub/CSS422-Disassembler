@@ -44,80 +44,58 @@ START:
 
 
 
+                                        ;I/O
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+DISPLAY_WELCOME_MSG
+    LEA             WELCOME_MSG,A1
+    MOVE.B          #13,D0
+    TRAP            #15
 
-*
-*MAIN
-*        JSR         DISPLAY_WELCOME_MSG
-*        JSR         GET_START_ADDRESS
-*        JSR         GET_END_ADDRESS  
-*
-*
-*  
-*
-*
-*                                        ;I/O
-*;///////////////////////////////////////////////////////////////////////////////////////////////////
-****************************************************************************************************
-*DISPLAY_WELCOME_MSG
-*    LEA             WELCOME_MSG,A1
-*    MOVE.B          #13,D0
-*    TRAP            #15
-*    
-*    RTS             
-*    
-*    
-*    
+
+GET_START_ADDRESS
+    LEA				ASK_FOR_STARTING_ADDRESS_MSG,A1
+	MOVE.B			#13,D0
+	TRAP			#15
+	
+	MOVE.B          #2,D0               ; User Input
+	TRAP            #15                 ; Get User Input 
+	MOVE.L          #$00005000,A2       ; String Builder  
+
+    MOVEA.L         A2,A3           
+
+
 LOOP_INPUT
-*
-*GET_START_ADDRESS
-*    LEA				ASK_FOR_STARTING_ADDRESS_MSG,A1
-*	MOVE.B			#13,D0
-*	TRAP			#15
-*	
-*	
-*	* Capture user entry string
-*	MOVE.B			#2,D0
-*	TRAP			#15
-*	
-*	
-*	* If bad entry, loop GET_START_ADDRESS
-*	CMP.L			MIN_ADDR,D1
-*	BLT				GET_START_ADDRESS
-*	CMP.L			MAX_ADDR,D1
-*	BGT				GET_START_ADDRESS
-*	
-*	
-*	* Save the address
-*	MOVEA.L			A1,A0
-*	RTS
-*	
-*	
-*
-*	
-*GET_END_ADDRESS
-*	LEA				ASK_FOR_ENDING_ADDRESS_MSG,A1
-*	MOVE.B			#13,D0
-*	TRAP			#15
-*	
-*	
-*	* Capture user entry string
-*	MOVE.B			#2,D0
-*	TRAP			#15
-*	
-*	
-*	* If bad entry, loop GET_END_ADDRESS
-*	CMP.L			(A5),D1
-*	BLT				GET_END_ADDRESS
-*	CMP.L			MAX_ADDR,D1
-*	BGT				GET_END_ADDRESS
-*
-*	
-*
-*
-*	
-*
-*
-*
+    CMPI.B          #$00,(A1)
+    BEQ             DONE_GET_START_ADDRESS
+    
+    MOVE.B          (A1)+,D2
+    LEA             ASCII_HEX,A0
+    MOVE.B          (0,A0,D2),D3
+    LSL.B           #$4,D3
+    MOVE.B          (A1)+,D2
+    ADD.B           (0,A0,D2),D3
+    MOVE.B          D3,(A3)+
+    
+    BRA             LOOP_INPUT
+	
+
+	
+DONE_GET_START_ADDRESS
+    MOVE.L          (A2),START_ADDR
+    BRA             GET_END_ADDRESS
+
+	
+GET_END_ADDRESS
+    
+
+	
+
+
+	
+
+
+
 *;///////////////////////////////////////////////////////////////////////////////////////////////////
 ****************************************************************************************************
 
@@ -130,7 +108,7 @@ LOOP_INPUT
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 * Put program code here
-   MOVE.L  #$00008000,START_ADDR
+*  MOVE.L  #$00008000,START_ADDR
    MOVE.L  #$00008060,END_ADDR
    MOVEA.L START_ADDR,A0
    MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
@@ -1439,9 +1417,9 @@ TERMINATE
 * Put variables and constants here
 
 WELCOME_MSG						DC.B	'Welcome to our Disassembler!',0
-ASK_FOR_STARTING_ADDRESS_MSG	DC.B    'PLEAse specify the starting address',0
-ASK_FOR_ENDING_ADDRESS_MSG		DC.B    'PLEAse specify the ending address',0
-INVALID_USER_INPUT_MSG			DC.B	'PLEAse enter a valid address ($00002000 - $000FFFFF)',0		 
+ASK_FOR_STARTING_ADDRESS_MSG	DC.B    'Please specify the starting address',0
+ASK_FOR_ENDING_ADDRESS_MSG		DC.B    'Please specify the ending address',0
+INVALID_USER_INPUT_MSG			DC.B	'Please enter a valid address ($00002000 - $000FFFFF)',0		 
 
 
 *----------------------------------------------------------
@@ -1637,7 +1615,34 @@ HEX_ASCII
       DC.B    $45
       DC.B    $46    
 
+
+
+    ORG    $5000
+ASCII_HEX
+    DCB.B   48,0
+    DC.B    $0  
+    DC.B    $1
+    DC.B    $2
+    DC.B    $3
+    DC.B    $4
+    DC.B    $5
+    DC.B    $6
+    DC.B    $7
+    DC.B    $8
+    DC.B    $9
+    DCB.B   7,0
+    DC.B    $A
+    DC.B    $B
+    DC.B    $C
+    DC.B    $D
+    DC.B    $E
+    DC.B    $F
+
+
+
     END    START        ; last line of source
+
+
 
 
 
