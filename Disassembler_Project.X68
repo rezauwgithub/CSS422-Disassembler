@@ -51,24 +51,33 @@ DISPLAY_WELCOME_MSG
     LEA             WELCOME_MSG,A1
     MOVE.B          #13,D0
     TRAP            #15
-
-
 GET_START_ADDRESS
     LEA				ASK_FOR_STARTING_ADDRESS_MSG,A1
 	MOVE.B			#13,D0
 	TRAP			#15
-	
+	MOVEA.L         #$00000000,A1
 	MOVE.B          #2,D0               ; User Input
 	TRAP            #15                 ; Get User Input 
-	MOVE.L          #$00005000,A2       ; String Builder  
-
-    MOVEA.L         A2,A3           
-
+	MOVE.L          #$00009000,A2       ; String Builder  
+    MOVEA.L         A2,A3
+    JSR             LOOP_INPUT
+    MOVE.L          (A2),START_ADDR
+GET_END_ADDRESS
+    LEA				ASK_FOR_ENDING_ADDRESS_MSG,A1
+	MOVE.B			#13,D0
+	TRAP			#15
+    MOVEA.L         #$00000000,A1
+	MOVE.B          #2,D0               ; User Input
+	TRAP            #15                 ; Get User Input 
+	MOVE.L          #$00009000,A2       ; String Builder  
+    MOVEA.L         A2,A3 
+    JSR             LOOP_INPUT
+    MOVE.L          (A2),END_ADDR        
+    JMP             PROGRAM_START
 
 LOOP_INPUT
     CMPI.B          #$00,(A1)
-    BEQ             DONE_GET_START_ADDRESS
-    
+    BEQ             DONE_LOOP
     MOVE.B          (A1)+,D2
     LEA             ASCII_HEX,A0
     MOVE.B          (0,A0,D2),D3
@@ -76,24 +85,9 @@ LOOP_INPUT
     MOVE.B          (A1)+,D2
     ADD.B           (0,A0,D2),D3
     MOVE.B          D3,(A3)+
-    
     BRA             LOOP_INPUT
-	
-
-	
-DONE_GET_START_ADDRESS
-    MOVE.L          (A2),START_ADDR
-    BRA             GET_END_ADDRESS
-
-	
-GET_END_ADDRESS
-    
-
-	
-
-
-	
-
+DONE_LOOP
+    RTS
 
 
 *;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +103,9 @@ GET_END_ADDRESS
 ***************************************************************************************************
 * Put program code here
 *  MOVE.L  #$00008000,START_ADDR
-   MOVE.L  #$00008060,END_ADDR
+*  MOVE.L  #$00008060,END_ADDR
+PROGRAM_START
+   MOVE.B  #0,OUTPUT_COUNTER
    MOVEA.L START_ADDR,A0
    MOVEA.L A0,A2 ;USE A2 TO TRAVERSE MEMORY
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,6 +118,15 @@ GET_END_ADDRESS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 TESTLOOP
+    CMPI.B  #30,OUTPUT_COUNTER
+    BNE     CONTINUE_TESTLOOP
+    MOVE.B  #0,OUTPUT_COUNTER
+    LEA     PRESS_KEY_CONTINUE,A1
+    JSR     TASK13
+    MOVE.B  #5,D0
+    TRAP    #15
+CONTINUE_TESTLOOP
+    ADDI.B  #1,OUTPUT_COUNTER
     JSR ROTATEBYTE
                 
         
@@ -1419,7 +1424,8 @@ TERMINATE
 WELCOME_MSG						DC.B	'Welcome to our Disassembler!',0
 ASK_FOR_STARTING_ADDRESS_MSG	DC.B    'Please specify the starting address',0
 ASK_FOR_ENDING_ADDRESS_MSG		DC.B    'Please specify the ending address',0
-INVALID_USER_INPUT_MSG			DC.B	'Please enter a valid address ($00002000 - $000FFFFF)',0		 
+INVALID_USER_INPUT_MSG			DC.B	'Please enter a valid address ($00002000 - $000FFFFF)',0
+PRESS_KEY_CONTINUE              DC.B    'Please press any key to display next page',0	 
 
 
 *----------------------------------------------------------
@@ -1543,6 +1549,7 @@ OPMODE                  DS.B    1
 DIRECTION               DS.B    1
 SIZETYPE                DS.B    1
 CURRENT_ADDR            DS.L    1
+OUTPUT_COUNTER          DS.B    1
 
 
 START_ADDR              DS.L    1
@@ -1641,6 +1648,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
