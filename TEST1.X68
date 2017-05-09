@@ -80,6 +80,15 @@
     DIVU    $FFFF5000,D4
     LEA     $0000FFFF,A6
     CMP.L   #$00004000,D5
+	
+	JSR		JSR_TEST	; Added by Reza
+	
+	
+	
+JSR_TEST	; Added by Reza
+	RTS
+	
+	
 
 * Put variables and constants here
 

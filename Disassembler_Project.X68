@@ -962,7 +962,11 @@ PRINT_CMP
     MOVE.B  DESTINATION_REG,D4
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
-    JMP     MOVENEXT   
+    JMP     MOVENEXT
+PRINT_JSR
+    
+PRINT_RTS
+
 PRINT_CURRENT_ADDR
     JSR     CLEAR_REGS
     MOVEA.L  #$00004000,A1
@@ -1648,6 +1652,8 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
+
 
 
 
