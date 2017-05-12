@@ -301,6 +301,42 @@ NOP_MOVEM_LEA_CLR_JSR_RTS_
     BEQ     RTS_
     
     BEQ     SHOW_ERROR
+    
+CLR_
+    MOVE.B  #$2,SIZETYPE 
+    JSR CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_10
+    MOVE.B  D2,SIZE
+    
+    JSR CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,DESTINATION_MODE
+    
+    JSR CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,DESTINATION_REG
+    
+    BRA     PRINT_CLR
+
+JSR_
+    JSR CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,DESTINATION_MODE
+    
+    JSR CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,DESTINATION_REG
+    
+    BRA     PRINT_JSR 
+
+RTS_
+    BRA    PRINT_RTS
+   
 LEA_
     MOVE.B  #$4,SIZETYPE
     JSR     CLEAR_REGS
