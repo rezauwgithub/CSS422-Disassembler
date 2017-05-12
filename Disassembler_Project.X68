@@ -280,11 +280,27 @@ MOVENEXT
     BGE     TERMINATE
     JMP     TESTLOOP
 NOP_MOVEM_LEA_CLR_JSR_RTS_
-    JSR     CLEAR_REGS
+    JSR     CLEAR_REGS  *Check if LEA
     MOVE.W  (A2),D2
     JSR     BITS_8_10
     CMPI    #$7,D2
     BEQ     LEA_
+    
+    JSR     CLEAR_REGS  * Check if CLR
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    CMPI    #$1,D2
+    BEQ     CLR_
+    
+    JSR     CLEAR_REGS  *Check if JSR or RTS
+    MOVE.W  (A2),D2
+    JSR     BITS_8_10
+    CMPI    #$2,D2
+    BEQ     JSR_
+    CMPI    #$1,D2
+    BEQ     RTS_
+    
+    BEQ     SHOW_ERROR
 LEA_
     MOVE.B  #$4,SIZETYPE
     JSR     CLEAR_REGS
@@ -1652,6 +1668,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
