@@ -81,8 +81,11 @@
     LEA     $0000FFFF,A6
     CMP.L   #$00004000,D5
 	
-	JSR		JSR_TEST	; Added by Reza
-	
+	JSR		JSR_TEST
+	*CLR.B   D2
+	*CLR.W   D3
+	*CLR.L   D4
+	RTS
 	
 	
 JSR_TEST	; Added by Reza
@@ -91,6 +94,7 @@ JSR_TEST	; Added by Reza
 	
 
 * Put variables and constants here
+
 
 
 
