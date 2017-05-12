@@ -269,6 +269,7 @@ DEFAULT
                                         ;OPCODE SUBROUTINES   
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************    
+
 ROTATEBYTE
     MOVE.B  (A2),D2
     LSR.L   #$4,D2
@@ -279,26 +280,34 @@ MOVENEXT
     CMPA.L  END_ADDR,A2
     BGE     TERMINATE
     JMP     TESTLOOP
+    
 NOP_MOVEM_LEA_CLR_JSR_RTS_
-    JSR     CLEAR_REGS  *Check if LEA
+
+    JSR     CLEAR_REGS  *Check if RTS or NOP
     MOVE.W  (A2),D2
+    CMPI    #$4E75,D2
+    BEQ     NOP_
+    CMPI    #$4E71,D2
+    BEQ     RTS_
+    
+    MOVE.W  (A2),D2    *Check if LEA
     JSR     BITS_8_10
     CMPI    #$7,D2
     BEQ     LEA_
     
-    JSR     CLEAR_REGS  * Check if CLR
+    JSR     CLEAR_REGS  * Check if CLR or JSR
     MOVE.W  (A2),D2
     JSR     BITS_5_7
     CMPI    #$1,D2
     BEQ     CLR_
-    
-    JSR     CLEAR_REGS  *Check if JSR or RTS
-    MOVE.W  (A2),D2
-    JSR     BITS_8_10
-    CMPI    #$2,D2
+    CMPI    #$7,D2
     BEQ     JSR_
+    
+    JSR     CLEAR_REGS  * Check if MOVEM
+    MOVE.W  (A2),D2
+    JSR     BITS_8_9
     CMPI    #$1,D2
-    BEQ     RTS_
+    BEQ     MOVEM_    
     
     BEQ     SHOW_ERROR
     
@@ -319,7 +328,7 @@ CLR_
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
     
-    *BRA     PRINT_CLR
+    BRA     PRINT_CLR
 
 JSR_
     JSR CLEAR_REGS
@@ -336,6 +345,9 @@ JSR_
 
 RTS_
     BRA    PRINT_RTS
+    
+NOP_
+    BRA    PRINT_NOP
    
 LEA_
     MOVE.B  #$4,SIZETYPE
@@ -698,8 +710,44 @@ DIVU_
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
     BRA     PRINT_DIVU
+
 LSd_ASd_ROd_
-    RTS
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_10
+    CMPI.B    #$3,D2
+    BEQ     LSd_ASd_ROd_1
+    
+LSd_ASd_ROd_1
+
+    JSR     CLEAR_REGS * get direction
+    MOVE.W  (A2),D2
+    JSR     BITS_8
+    MOVE.B  D2,DIRECTION
+    
+    JSR     CLEAR_REGS * get destination mode
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS * get destination register
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,DESTINATION_REG
+    
+    JSR     CLEAR_REGS   * Go to correct printing 
+    MOVE.W  (A2),D2    
+    JSR     BITS_5_7
+    CMPI.B  #$0,D2
+    BEQ     PRINT_ASD1
+    CMPI.B  #$1,D2
+    BEQ     PRINT_LSD1
+    CMPI.B  #$3,D2
+    BEQ     PRINT_ROD1
+    
+    BEQ     SHOW_ERROR
+   
 CMP_
     MOVE.B  #$2,SIZETYPE
     JSR     CLEAR_REGS
@@ -731,6 +779,15 @@ BCC_
                                           ;Op-Code SUBROUTINES
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
+PRINT_NOP
+    JSR     PRINT_CURRENT_ADDR
+    LEA     NOP_OP,A1      ;Print NOP
+    JSR     TASK14   
+    JSR     PRINT_S4 
+    JSR     PRINT_SPACE 
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT 
+
 PRINT_RTS
     JSR     PRINT_CURRENT_ADDR
     LEA     RTS_OP,A1      ;Print RTS

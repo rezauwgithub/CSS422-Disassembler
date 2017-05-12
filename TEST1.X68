@@ -85,6 +85,7 @@
 	*CLR.B   D2
 	*CLR.W   D3
 	*CLR.L   D4
+	NOP
 	RTS
 	
 	
@@ -94,6 +95,7 @@ JSR_TEST	; Added by Reza
 	
 
 * Put variables and constants here
+
 
 
 
