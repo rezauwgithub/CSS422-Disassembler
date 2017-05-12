@@ -319,7 +319,7 @@ CLR_
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
     
-    BRA     PRINT_CLR
+    *BRA     PRINT_CLR
 
 JSR_
     JSR CLEAR_REGS
@@ -731,6 +731,30 @@ BCC_
                                           ;Op-Code SUBROUTINES
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
+PRINT_RTS
+    JSR     PRINT_CURRENT_ADDR
+    LEA     RTS_OP,A1      ;Print RTS
+    JSR     TASK14   
+    JSR     PRINT_S4 
+    JSR     PRINT_SPACE 
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT 
+    
+PRINT_JSR
+    JSR     PRINT_CURRENT_ADDR
+    LEA     JSR_OP,A1      ;Print RTS
+    JSR     TASK14   
+    JSR     PRINT_S4 
+    JSR     PRINT_SPACE 
+    
+    JSR     CLEAR_REGS          * Load distination mode and register for printing
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    
+    JMP     MOVENEXT
+
 PRINT_MOVEA
     JSR     PRINT_CURRENT_ADDR
     LEA     MOVEA_OP,A1      ;PRINTS MOVEA
@@ -772,6 +796,7 @@ PRINT_MOVE
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
+    
 PRINT_ADD
     JSR     PRINT_CURRENT_ADDR
     LEA     ADD_OP,A1
@@ -1015,9 +1040,6 @@ PRINT_CMP
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
-PRINT_JSR
-    
-PRINT_RTS
 
 PRINT_CURRENT_ADDR
     JSR     CLEAR_REGS
