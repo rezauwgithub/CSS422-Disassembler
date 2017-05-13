@@ -18,7 +18,7 @@ MAX_ADDR					EQU	$000FFFFF
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
-    INCLUDE TEST1.X68
+    INCLUDE comprehensive_test.X68
     ORG    $1000
 START:
     MEMORY READ  $006000,$0060EF
@@ -285,16 +285,17 @@ NOP_MOVEM_LEA_CLR_JSR_RTS_
 
     JSR     CLEAR_REGS  *Check if RTS or NOP
     MOVE.W  (A2),D2
-    CMPI    #$4E75,D2
-    BEQ     NOP_
-    CMPI    #$4E71,D2
+    CMPI.W  #$4E75,D2
     BEQ     RTS_
+    CMPI.W  #$4E71,D2
+    BEQ     NOP_
     
+    JSR     CLEAR_REGS
     MOVE.W  (A2),D2    *Check if LEA
     JSR     BITS_8_10
     CMPI    #$7,D2
     BEQ     LEA_
-    
+
     JSR     CLEAR_REGS  * Check if CLR or JSR
     MOVE.W  (A2),D2
     JSR     BITS_5_7
@@ -305,8 +306,10 @@ NOP_MOVEM_LEA_CLR_JSR_RTS_
     
     JSR     CLEAR_REGS  * Check if MOVEM
     MOVE.W  (A2),D2
-    JSR     BITS_8_9
-    CMPI    #$1,D2
+    JSR     BITS_5_7
+    CMPI.B  #$4,D2
+    BEQ     MOVEM_
+    CMPI.B  #$6,D2
     BEQ     MOVEM_    
     
     BEQ     SHOW_ERROR
@@ -712,15 +715,57 @@ DIVU_
     BRA     PRINT_DIVU
 
 LSd_ASd_ROd_
-    
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
     JSR     BITS_9_10
-    CMPI.B    #$3,D2
+    CMPI.B  #$3,D2
     BEQ     LSd_ASd_ROd_1
     
+    MOVE.B  #$2,SIZETYPE
+    MOVE.B  D2,SIZE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    MOVE.B  D2,SOURCE_REG
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_8
+    MOVE.B  D2,DIRECTION
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11
+    CMPI.B  #$0,D2
+    BEQ     LOAD_IMMEDIATE_MODE2
+    CMPI.B  #$1,D2
+    BEQ     LOAD_REGISTER_MODE2 
+LOAD_IMMEDIATE_MODE2
+    MOVE.B  #$7,SOURCE_MODE
+    BRA     CONTINUE_LSd_ASd_ROd_
+LOAD_REGISTER_MODE2
+    MOVE.B  #$0,SOURCE_MODE
+    BRA     CONTINUE_LSd_ASd_ROd_ 
+CONTINUE_LSd_ASd_ROd_ 
+    JSR     CLEAR_REGS
+    MOVE.B  #$0,DESTINATION_MODE
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,DESTINATION_REG
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_12_13
+    
+    CMPI.B  #$0,D2
+    BEQ     PRINT_ASD
+    CMPI.B  #$1,D2
+    BEQ     PRINT_LSD
+    CMPI.B  #$3,D2
+    BEQ     PRINT_ROD   
 LSd_ASd_ROd_1
-
+    MOVE.B  #$4,SIZETYPE
     JSR     CLEAR_REGS * get direction
     MOVE.W  (A2),D2
     JSR     BITS_8
@@ -747,7 +792,6 @@ LSd_ASd_ROd_1
     BEQ     PRINT_ROD1
     
     BEQ     SHOW_ERROR
-   
 CMP_
     MOVE.B  #$2,SIZETYPE
     JSR     CLEAR_REGS
@@ -773,6 +817,7 @@ CMP_
     BRA     PRINT_CMP 
 BCC_
     RTS
+MOVEM_
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
@@ -831,14 +876,11 @@ PRINT_MOVEA
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
-
 PRINT_MOVE
     JSR     PRINT_CURRENT_ADDR
     LEA     MOVE_OP,A1      ;PRINTS MOVE
     JSR     TASK14     
-    JSR     PRINT_S1        ;PRINTS .B,.W,.L
-    
-    
+    JSR     PRINT_S1        ;PRINTS .B,.W,.L 
     
     JSR     CLEAR_REGS      * Load source mode and register for printing
     MOVE.B  SOURCE_MODE,D2  
@@ -1099,7 +1141,7 @@ PRINT_CMP
     JMP     MOVENEXT
 PRINT_CLR
     JSR     PRINT_CURRENT_ADDR
-    LEA     JSR_OP,A1
+    LEA     CLR_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
     
@@ -1109,6 +1151,168 @@ PRINT_CLR
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
+    
+PRINT_ASD
+    JSR     PRINT_CURRENT_ADDR
+    CMPI.B  #$0,DIRECTION
+    BEQ     PRINT_RIGHT_ASD
+    BRA     PRINT_LEFT_ASD
+PRINT_RIGHT_ASD
+    LEA     ASR_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S2
+    BRA     CONTINUE_PRINT_ASD
+PRINT_LEFT_ASD
+    LEA     ASL_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S2
+    BRA     CONTINUE_PRINT_ASD
+CONTINUE_PRINT_ASD
+    JSR     CLEAR_REGS
+    MOVE.B  SOURCE_MODE,D2
+    MOVE.B  SOURCE_REG,D4
+    JSR     PRINT_MODE_REG
+    
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+    
+    
+    
+    
+PRINT_LSD
+    JSR     PRINT_CURRENT_ADDR
+    CMPI.B  #$0,DIRECTION
+    BEQ     PRINT_RIGHT_LSD
+    BRA     PRINT_LEFT_LSD
+PRINT_RIGHT_LSD
+    LEA     LSR_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S2
+    BRA     CONTINUE_PRINT_LSD
+PRINT_LEFT_LSD
+    LEA     LSL_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S2
+    BRA     CONTINUE_PRINT_LSD
+CONTINUE_PRINT_LSD
+    JSR     CLEAR_REGS
+    MOVE.B  SOURCE_MODE,D2
+    MOVE.B  SOURCE_REG,D4
+    JSR     PRINT_MODE_REG
+    
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+    
+    
+PRINT_ROD
+    JSR     PRINT_CURRENT_ADDR
+    CMPI.B  #$0,DIRECTION
+    BEQ     PRINT_RIGHT_ROD
+    BRA     PRINT_LEFT_ROD
+PRINT_RIGHT_ROD
+    LEA     ROR_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S2
+    BRA     CONTINUE_PRINT_ROD
+PRINT_LEFT_ROD
+    LEA     ROL_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S2
+    BRA     CONTINUE_PRINT_ROD
+CONTINUE_PRINT_ROD
+    JSR     CLEAR_REGS
+    MOVE.B  SOURCE_MODE,D2
+    MOVE.B  SOURCE_REG,D4
+    JSR     PRINT_MODE_REG
+    
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+    
+    
+PRINT_ASD1
+    JSR     PRINT_CURRENT_ADDR
+    CMPI.B  #$0,DIRECTION
+    BEQ     PRINT_RIGHT_ASD1
+    BRA     PRINT_LEFT_ASD1
+PRINT_RIGHT_ASD1
+    LEA     ASR_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S4
+    BRA     CONTINUE_PRINT_ASD1
+PRINT_LEFT_ASD1
+    LEA     ASL_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S4
+    BRA     CONTINUE_PRINT_ASD1
+CONTINUE_PRINT_ASD1
+    JSR     PRINT_SPACE
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+   
+PRINT_LSD1
+    JSR     PRINT_CURRENT_ADDR
+    CMPI.B  #$0,DIRECTION
+    BEQ     PRINT_RIGHT_LSD1
+    BRA     PRINT_LEFT_LSD1
+PRINT_RIGHT_LSD1
+    LEA     LSR_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S4
+    BRA     CONTINUE_PRINT_LSD1
+PRINT_LEFT_LSD1
+    LEA     LSL_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S4
+    BRA     CONTINUE_PRINT_LSD1
+CONTINUE_PRINT_LSD1
+    JSR     PRINT_SPACE
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+    
+PRINT_ROD1
+    JSR     PRINT_CURRENT_ADDR
+    CMPI.B  #$0,DIRECTION
+    BEQ     PRINT_RIGHT_ROD1
+    BRA     PRINT_LEFT_ROD1
+PRINT_RIGHT_ROD1
+    LEA     ROR_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S4
+    BRA     CONTINUE_PRINT_ROD1
+PRINT_LEFT_ROD1
+    LEA     ROL_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S4
+    BRA     CONTINUE_PRINT_ROD1
+CONTINUE_PRINT_ROD1
+    JSR     PRINT_SPACE
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+
 PRINT_CURRENT_ADDR
     JSR     CLEAR_REGS
     MOVEA.L  #$00004000,A1
@@ -1177,6 +1381,17 @@ BITS_9_10
     LSR.W #$8,D2
     LSR.W #$6,D2
     RTS
+BITS_11
+    LSL.W	#$8,D2
+    LSL.W	#$2,D2
+    LSR.W	#$8,D2
+    LSR.W	#$7,D2
+    RTS
+BITS_12_13
+    LSL.W	#$8,D2
+    LSL.W	#$3,D2
+    LSR.W	#$8,D2
+    LSR.W	#$6,D2
 BITS_11_13
     LSL.W #$8,D2
     LSL.W #$2,D2
@@ -1794,6 +2009,8 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
+
 
 
 
