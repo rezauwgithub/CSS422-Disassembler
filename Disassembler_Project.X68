@@ -61,7 +61,71 @@ GET_START_ADDRESS
 	MOVE.L          #$00009000,A2       ; String Builder  
     MOVEA.L         A2,A3
     JSR             LOOP_INPUT
-    MOVE.L          (A2),START_ADDR
+    *MOVE.L          (A2),START_ADDR
+    CMPI.W          #$2,D1
+    BLE             ROTATE_AS_BYTE
+    CMPI.W          #$4,D1
+    BLE             ROTATE_AS_WORD
+    CMPI.W          #$8,D1
+    BLE             ROTATE_AS_LONG
+ROTATE_AS_BYTE
+    JSR             CLEAR_REGS
+    CMPI.B          #$2,D1
+    BLT             CONTINUE_ROTATE_AS_BYTE
+    ADD.B           (A2),D2
+    MOVEA.L         D2,A6
+    MOVE.L          A6,START_ADDR
+    BRA             GET_END_ADDRESS
+CONTINUE_ROTATE_AS_BYTE
+    ADD.B           (A2),D2
+    LSR.B           #$4,D2
+    MOVEA.L         D2,A6
+    MOVE.L          A6,START_ADDR
+    BRA             GET_END_ADDRESS
+ROTATE_AS_WORD
+    JSR             CLEAR_REGS
+    CMPI.B          #$4,D1
+    BLT             CONTINUE_ROTATE_AS_WORD
+    ADD.W           (A2),D2
+    MOVEA.L         D2,A6
+    MOVE.L          A6,START_ADDR
+    BRA             GET_END_ADDRESS
+CONTINUE_ROTATE_AS_WORD
+    ADD.W           (A2),D2
+    LSR.W           #$4,D2
+    MOVEA.L         D2,A6
+    MOVE.L          A6,START_ADDR
+    BRA             GET_END_ADDRESS
+ROTATE_AS_LONG
+    JSR             CLEAR_REGS
+    CMPI.B          #$8,D1
+    BLT             CONTINUE_ROTATE_AS_LONG
+    ADD.L           (A2),D2
+    MOVEA.L         D2,A6
+    MOVE.L          A6,START_ADDR
+    BRA             GET_END_ADDRESS
+CONTINUE_ROTATE_AS_LONG
+    ADD.L           (A2),D2
+    CMPI            #$5,D1
+    BEQ             ROTATE_BY_12
+    CMPI            #$6,D1
+    BEQ             ROTATE_BY_8
+    CMPI            #$7,D1
+    BEQ             ROTATE_BY_6
+ROTATE_BY_12
+    LSR.L           #$8,D2
+    LSR.L           #$4,D2
+    BRA             CONTINUE_AS_LONG
+ROTATE_BY_8
+    LSR.L           #$8,D2
+    BRA             CONTINUE_AS_LONG
+ROTATE_BY_6
+    LSR.L           #$6,D2
+    BRA             CONTINUE_AS_LONG
+CONTINUE_AS_LONG    
+    MOVEA.L         D2,A6
+    MOVE.L          A6,START_ADDR
+    BRA             GET_END_ADDRESS
 GET_END_ADDRESS
     LEA				ASK_FOR_ENDING_ADDRESS_MSG,A1
 	MOVE.B			#13,D0
@@ -2065,6 +2129,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
