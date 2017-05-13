@@ -111,7 +111,7 @@ CONTINUE_ROTATE_AS_LONG
     CMPI            #$6,D1
     BEQ             ROTATE_BY_8
     CMPI            #$7,D1
-    BEQ             ROTATE_BY_6
+    BEQ             ROTATE_BY_4
 ROTATE_BY_12
     LSR.L           #$8,D2
     LSR.L           #$4,D2
@@ -119,8 +119,8 @@ ROTATE_BY_12
 ROTATE_BY_8
     LSR.L           #$8,D2
     BRA             CONTINUE_AS_LONG
-ROTATE_BY_6
-    LSR.L           #$6,D2
+ROTATE_BY_4
+    LSR.L           #$4,D2
     BRA             CONTINUE_AS_LONG
 CONTINUE_AS_LONG    
     MOVEA.L         D2,A6
@@ -2129,6 +2129,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
