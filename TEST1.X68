@@ -82,11 +82,16 @@
     CMP.L   #$00004000,D5
 	
 	JSR		JSR_TEST
-	*CLR.B   D2
-	*CLR.W   D3
-	*CLR.L   D4
+	CLR.B   D2
+	CLR.W   D3
+	CLR.L   D4
 	NOP
 	RTS
+	ASR     $5000
+	ASL     (A4)
+	
+	LSR     $00001000
+	LSL     (A3)+
 	
 	
 JSR_TEST	; Added by Reza
@@ -95,6 +100,9 @@ JSR_TEST	; Added by Reza
 	
 
 * Put variables and constants here
+
+
+
 
 
 
