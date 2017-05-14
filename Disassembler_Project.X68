@@ -265,18 +265,15 @@ CASE2
 ;----------------------    
     CMP.L   #$1,D2
     BNE     CASE2_1
-    JSR     MOVE_MOVEA_
-    JMP     MOVENEXT
+    JMP     MOVE_MOVEA_
 CASE2_1
     CMP.L   #$2,D2
     BNE     CASE2_2
-    JSR     MOVE_MOVEA_
-    JMP     MOVENEXT
+    JMP     MOVE_MOVEA_
 CASE2_2
     CMP.L   #$3,D2
     BNE     CASE3
-    JSR     MOVE_MOVEA_
-    JMP     MOVENEXT
+    JMP     MOVE_MOVEA_
 ;----------------------
 
 CASE3
@@ -284,8 +281,7 @@ CASE3
 ;----------------------    
     CMP.L   #$7,D2
     BNE     CASE4
-    JSR     MOVEQ_
-    JMP     MOVENEXT
+    JMP     MOVEQ_
 ;----------------------
 
 CASE4
@@ -293,8 +289,7 @@ CASE4
 ;----------------------    
     CMP.L   #$D,D2
     BNE     CASE5
-    JSR     ADD_ADDA_
-    JMP     MOVENEXT
+    JMP     ADD_ADDA_
 ;----------------------
 
 CASE5
@@ -302,8 +297,7 @@ CASE5
 ;----------------------    
     CMP.L   #$0,D2
     BNE     CASE6
-    JSR     ADDI_
-    JMP     MOVENEXT
+    JMP     ADDI_
 ;----------------------
 
 CASE6      
@@ -311,8 +305,7 @@ CASE6
 ;----------------------    
     CMP.L   #$5,D2
     BNE     CASE7
-    JSR     ADDQ_
-    JMP     MOVENEXT
+    JMP     ADDQ_
 ;----------------------
 
 CASE7   
@@ -320,8 +313,7 @@ CASE7
 ;----------------------    
     CMP.L   #$9,D2
     BNE     CASE8
-    JSR     SUB_
-    JMP     MOVENEXT
+    JMP     SUB_
 ;----------------------
 
 CASE8
@@ -329,8 +321,7 @@ CASE8
 ;----------------------    
     CMP.L   #$C,D2
     BNE     CASE9
-    JSR     MULS_AND_
-    JMP     MOVENEXT
+    JMP     MULS_AND_
 ;----------------------
 
 CASE9
@@ -338,8 +329,7 @@ CASE9
 ;----------------------    
     CMP.L   #$8,D2
     BNE     CASE10
-    JSR     OR_DIVU_
-    JMP     MOVENEXT
+    JMP     OR_DIVU_
 ;----------------------
 
 CASE10
@@ -347,8 +337,7 @@ CASE10
 ;----------------------    
     CMP.L   #$E,D2
     BNE     CASE11
-    JSR     LSd_ASd_ROd_
-    JMP     MOVENEXT
+    JMP     LSd_ASd_ROd_
 ;----------------------
 
 CASE11
@@ -356,8 +345,7 @@ CASE11
 ;----------------------    
     CMP.L   #$B,D2
     BNE     CASE12
-    JSR     CMP_
-    JMP     MOVENEXT
+    JMP     CMP_
 ;----------------------
 
 CASE12
@@ -365,16 +353,13 @@ CASE12
 ;----------------------    
     CMP.L   #$6,D2
     BNE     DEFAULT
-    JSR     BCC_
-    JMP     MOVENEXT
+    JMP     BCC_
 ;----------------------
 
 DEFAULT
         ;FAIL 
 ;----------------------    
-    LEA     ERROR,A1
-    JSR     TASK13
-    JMP     MOVENEXT
+    JMP     PRINT_DATA
 ;----------------------
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -1487,6 +1472,31 @@ CONTINUE_PRINT_ROD1
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
+    
+PRINT_DATA 
+    JSR     PRINT_CURRENT_ADDR
+    LEA     DATA_OP,A1
+    JSR     TASK14
+    
+    JSR     PRINT_SPACE
+    
+    JSR     PRINT_HASHTAG
+    JSR     PRINT_DOLLAR
+    
+    MOVE.W  (A2),D2
+    JSR     BITS_1_8
+    MOVE.B  D2,D3
+    JSR     BYPASS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_16
+    MOVE.B  D2,D3
+    JSR     BYPASS
+
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+    
+    
+    
 
 PRINT_CURRENT_ADDR
     JSR     CLEAR_REGS
@@ -1534,6 +1544,9 @@ BITS_5_7
     LSL.W #$4,D2
     LSR.W #$8,D2
     LSR.W #$5,D2
+    RTS
+BITS_1_8
+    LSR.W #$8,D2
     RTS
 BITS_8
     LSL.W #$7,D2
@@ -2001,6 +2014,7 @@ CMP_OP      DC.B    'CMP',0
 BCC_OP      DC.B    'BCC',0
 JSR_OP      DC.B    'JSR',0
 RTS_OP      DC.B    'RTS',0
+DATA_OP     DC.B    'DATA',0
 *-------------------SIZE OF OP-----------------------------
 BYTE_SIZE   DC.B    '.B   ',0
 WORD_SIZE   DC.B    '.W   ',0
@@ -2185,6 +2199,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
