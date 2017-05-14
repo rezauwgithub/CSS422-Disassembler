@@ -242,8 +242,12 @@ TESTLOOP
     MOVE.B  #0,OUTPUT_COUNTER
     LEA     PRESS_KEY_CONTINUE,A1
     JSR     TASK13
+TESTLOOPKEY
     MOVE.B  #5,D0
     TRAP    #15
+    CMPI.B  #$D,D1
+    BEQ     CONTINUE_TESTLOOP
+    BRA     TESTLOOPKEY
 CONTINUE_TESTLOOP
     ADDI.B  #1,OUTPUT_COUNTER
     JSR ROTATEBYTE
@@ -952,7 +956,11 @@ PRINT_JSR
     LEA     JSR_OP,A1      ;Print RTS
     JSR     TASK14   
     JSR     PRINT_S4 
-    JSR     PRINT_SPACE 
+    JSR     PRINT_SPACE
+
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE 
     
     JSR     CLEAR_REGS          * Load distination mode and register for printing
     MOVE.B  DESTINATION_MODE,D2
@@ -987,6 +995,8 @@ PRINT_MOVE
     JSR     TASK14     
     JSR     PRINT_S1        ;PRINTS .B,.W,.L 
     
+    JSR     PRINT_ONE_SPACE
+    
     JSR     CLEAR_REGS      * Load source mode and register for printing
     MOVE.B  SOURCE_MODE,D2  
     MOVE.B  SOURCE_REG,D4   
@@ -1007,6 +1017,9 @@ PRINT_ADD
     JSR     TASK14
     JSR     PRINT_S2
     
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
+    
     JSR     CLEAR_REGS      * Load source mode and register for printing
     MOVE.B  SOURCE_MODE,D2  
     MOVE.B  SOURCE_REG,D4   
@@ -1026,6 +1039,8 @@ PRINT_ADDA
     JSR     TASK14
     JSR     PRINT_S3
     
+    JSR     PRINT_ONE_SPACE
+    
     JSR     CLEAR_REGS      * Load source mode and register for printing
     MOVE.B  SOURCE_MODE,D2  
     MOVE.B  SOURCE_REG,D4   
@@ -1044,6 +1059,8 @@ PRINT_ADDI
     LEA     ADDI_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
+ 
+    JSR     PRINT_ONE_SPACE
     
     JSR     CLEAR_REGS      * Load source mode and register for printing
     MOVE.B  SOURCE_MODE,D2  
@@ -1065,6 +1082,7 @@ PRINT_MOVEQ
     JSR     PRINT_S4
     
     JSR     PRINT_SPACE
+    JSR     PRINT_ONE_SPACE
     JSR     PRINT_HASHTAG
     JSR     PRINT_DOLLAR
     
@@ -1087,6 +1105,8 @@ PRINT_ADDQ
     LEA     ADDQ_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
+    
+    JSR     PRINT_ONE_SPACE
     
     JSR     PRINT_HASHTAG
     JSR     PRINT_DOLLAR
@@ -1111,6 +1131,9 @@ PRINT_SUB
     JSR     TASK14
     JSR     PRINT_S2
     
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
+    
     JSR     CLEAR_REGS      * Load source mode and register for printing
     MOVE.B  SOURCE_MODE,D2  
     MOVE.B  SOURCE_REG,D4   
@@ -1129,6 +1152,9 @@ PRINT_AND
     LEA     AND_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
+    
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     
     JSR     CLEAR_REGS      * Load source mode and register for printing
     MOVE.B  SOURCE_MODE,D2  
@@ -1150,6 +1176,8 @@ PRINT_MULS
     JSR     PRINT_S4
     
     JSR     PRINT_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     
     JSR     CLEAR_REGS
     MOVE.B  SOURCE_MODE,D2
@@ -1169,6 +1197,10 @@ PRINT_OR
     LEA     OR_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
+    
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     
     JSR     CLEAR_REGS      * Load source mode and register for printing
     MOVE.B  SOURCE_MODE,D2  
@@ -1190,6 +1222,8 @@ PRINT_DIVU
     JSR     PRINT_S4
     
     JSR     PRINT_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     
     JSR     CLEAR_REGS
     MOVE.B  SOURCE_MODE,D2
@@ -1211,6 +1245,9 @@ PRINT_LEA
     JSR     PRINT_S4
     
     JSR     PRINT_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE 
     
     JSR     CLEAR_REGS
     MOVE.B  SOURCE_MODE,D2
@@ -1231,6 +1268,9 @@ PRINT_CMP
     JSR     TASK14
     JSR     PRINT_S2
     
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
+    
     JSR     CLEAR_REGS
     MOVE.B  SOURCE_MODE,D2
     MOVE.B  SOURCE_REG,D4
@@ -1249,6 +1289,9 @@ PRINT_CLR
     LEA     CLR_OP,A1
     JSR     TASK14
     JSR     PRINT_S2
+    
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     
     JSR     CLEAR_REGS
     MOVE.B  DESTINATION_MODE,D2
@@ -1273,6 +1316,8 @@ PRINT_LEFT_ASD
     JSR     PRINT_S2
     BRA     CONTINUE_PRINT_ASD
 CONTINUE_PRINT_ASD
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     CMPI.B  #$7,SOURCE_MODE
     BEQ     PRINT_ASD_IMMEDIATE
     JSR     CLEAR_REGS
@@ -1320,6 +1365,8 @@ PRINT_LEFT_LSD
     JSR     PRINT_S2
     BRA     CONTINUE_PRINT_LSD
 CONTINUE_PRINT_LSD
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     CMPI.B  #$7,SOURCE_MODE
     BEQ     PRINT_LSD_IMMEDIATE
     JSR     CLEAR_REGS
@@ -1368,6 +1415,8 @@ PRINT_LEFT_ROD
     JSR     PRINT_S2
     BRA     CONTINUE_PRINT_ROD
 CONTINUE_PRINT_ROD
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     CMPI.B  #$7,SOURCE_MODE
     BEQ     PRINT_ASD_IMMEDIATE
     JSR     CLEAR_REGS
@@ -1417,6 +1466,9 @@ PRINT_LEFT_ASD1
     JSR     PRINT_S4
     BRA     CONTINUE_PRINT_ASD1
 CONTINUE_PRINT_ASD1
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     JSR     PRINT_SPACE
     JSR     CLEAR_REGS
     MOVE.B  DESTINATION_MODE,D2
@@ -1441,6 +1493,9 @@ PRINT_LEFT_LSD1
     JSR     PRINT_S4
     BRA     CONTINUE_PRINT_LSD1
 CONTINUE_PRINT_LSD1
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     JSR     PRINT_SPACE
     JSR     CLEAR_REGS
     MOVE.B  DESTINATION_MODE,D2
@@ -1465,6 +1520,9 @@ PRINT_LEFT_ROD1
     JSR     PRINT_S4
     BRA     CONTINUE_PRINT_ROD1
 CONTINUE_PRINT_ROD1
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     JSR     PRINT_SPACE
     JSR     CLEAR_REGS
     MOVE.B  DESTINATION_MODE,D2
@@ -1889,23 +1947,26 @@ PRINT_DOLLAR
     MOVE.B  #14,D0
     TRAP    #15
     RTS
-    
 * ------------------
 * * Print new line *
 * ------------------
 PRINT_NEW_LINE
     LEA     NEW_LINE,A1
-    MOVE.B  #13,D0
-    TRAP    #15
+    JSR     TASK13
     RTS
-
-* ------------------
-* * Print new line *
-* ------------------
+* --------------------
+* * Print LONG SPACE *
+* --------------------
 PRINT_SPACE
     LEA     NEW_LINE,A1
-    MOVE.B  #14,D0
-    TRAP    #15
+    JSR     TASK14
+    RTS
+* --------------------
+* * Print ONE SPACE *
+* --------------------    
+PRINT_ONE_SPACE
+    LEA     ONE_SPACE,A1
+    JSR     TASK14
     RTS
 **********************
 ****** ERRORS ********
@@ -1919,8 +1980,7 @@ SHOW_ERROR
 * --------------------
 SHOW_ERROR
     LEA     ERROR,A1
-    MOVE.B  #14,D0
-    TRAP    #15
+    JSR     TASK14     
     BRA     TESTLOOP       
 
 * --------------------------------------
@@ -1928,8 +1988,7 @@ SHOW_ERROR
 * --------------------------------------
 INVALID_INPUT_DETECTED
     *LEA     INVALID,A1
-    MOVE.B  #14,D0
-    TRAP    #15
+    JSR     TASK14
     BRA     LOOP_INPUT       
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -1974,7 +2033,7 @@ WELCOME_MSG						DC.B	'Welcome to our Disassembler!',0
 ASK_FOR_STARTING_ADDRESS_MSG	DC.B    'Please specify the starting address',0
 ASK_FOR_ENDING_ADDRESS_MSG		DC.B    'Please specify the ending address',0
 INVALID_USER_INPUT_MSG			DC.B	'Please enter a valid address ($00002000 - $000FFFFF)',0
-PRESS_KEY_CONTINUE              DC.B    'Please press any key to display next page',0	 
+PRESS_KEY_CONTINUE              DC.B    'Please press the ENTER key to continue...',0	 
 
 
 *----------------------------------------------------------
@@ -1986,6 +2045,7 @@ PAREN_OPEN  DC.B    '(',0
 PAREN_CLOSE DC.B    ')',0
 COMMA       DC.B    ',',0
 NEW_LINE    DC.B    '    ',0
+ONE_SPACE   DC.B    ' ',0
 *--------------------OPCODES-------------------------------
 NOP_OP      DC.B    'NOP',0
 MOVE_OP     DC.B    'MOVE',0
@@ -2198,6 +2258,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
