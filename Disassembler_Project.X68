@@ -54,56 +54,120 @@ DISPLAY_WELCOME_MSG
 GET_START_ADDRESS
     LEA				ASK_FOR_STARTING_ADDRESS_MSG,A1
 	MOVE.B			#13,D0
+	TRAP			    #15
+	MOVEA.L         #$00000000,A1
+	MOVE.B          #2,D0               ; User Input
+	TRAP            #15                 ; Get User Input 
+	MOVE.L          #$00009000,A2       ; String Builder  
+    MOVEA.L         A2,A3
+    JSR             CLEAR_REGS
+    MOVE.L          D1,D6
+    DIVS            #$2,D6
+    MOVE.W          D6,D7
+    SWAP            D6
+    CMPI.B          #$0,D6
+    BNE             ODD_LENGTH_START
+    MOVE.L          D7,D6
+    JSR             LOOP_INPUT
+    BRA             CONTINUE_START_ADDR
+ODD_LENGTH_START
+    MOVE.L          D7,D6
+    ADDI.L          #$1,D6
+    JSR             LOOP_INPUT
+CONTINUE_START_ADDR 
+    CMPI.W          #$2,D1
+    BLE             ROTATE_AS_BYTE_SUB1
+    CMPI.W          #$4,D1
+    BLE             ROTATE_AS_WORD_SUB1
+    CMPI.W          #$8,D1
+    BLE             ROTATE_AS_LONG_SUB1
+ROTATE_AS_BYTE_SUB1
+    JSR             ROTATE_AS_BYTE
+    MOVE.L          A6,START_ADDR
+    BRA             GET_END_ADDRESS
+ROTATE_AS_WORD_SUB1
+    JSR             ROTATE_AS_WORD
+    MOVE.L          A6,START_ADDR
+    BRA             GET_END_ADDRESS
+ROTATE_AS_LONG_SUB1
+    JSR             ROTATE_AS_LONG
+    MOVE.L          A6,START_ADDR
+    BRA             GET_END_ADDRESS
+    
+GET_END_ADDRESS
+    LEA			    ASK_FOR_ENDING_ADDRESS_MSG,A1
+    MOVE.B		    #13,D0
 	TRAP			#15
 	MOVEA.L         #$00000000,A1
 	MOVE.B          #2,D0               ; User Input
 	TRAP            #15                 ; Get User Input 
 	MOVE.L          #$00009000,A2       ; String Builder  
     MOVEA.L         A2,A3
+    JSR             CLEAR_REGS
+    MOVE.L          D1,D6
+    DIVS            #$2,D6
+    MOVE.W          D6,D7
+    SWAP            D6
+    CMPI.B          #$0,D6
+    BNE             ODD_LENGTH_END
+    MOVE.L          D7,D6
     JSR             LOOP_INPUT
-    *MOVE.L          (A2),START_ADDR
+    BRA             CONTINUE_END_ADDR
+ODD_LENGTH_END
+    MOVE.L          D7,D6
+    ADDI.L          #$1,D6
+    JSR             LOOP_INPUT
+CONTINUE_END_ADDR     
     CMPI.W          #$2,D1
-    BLE             ROTATE_AS_BYTE
+    BLE             ROTATE_AS_BYTE_SUB2
     CMPI.W          #$4,D1
-    BLE             ROTATE_AS_WORD
+    BLE             ROTATE_AS_WORD_SUB2
     CMPI.W          #$8,D1
-    BLE             ROTATE_AS_LONG
+    BLE             ROTATE_AS_LONG_SUB2
+ROTATE_AS_BYTE_SUB2
+    JSR             ROTATE_AS_BYTE
+    MOVE.L          A6,END_ADDR
+    BRA             PROGRAM_START
+ROTATE_AS_WORD_SUB2
+    JSR             ROTATE_AS_WORD
+    MOVE.L          A6,END_ADDR
+    BRA             PROGRAM_START
+ROTATE_AS_LONG_SUB2
+    JSR             ROTATE_AS_LONG
+    MOVE.L          A6,END_ADDR
+    BRA             PROGRAM_START
+    
 ROTATE_AS_BYTE
     JSR             CLEAR_REGS
     CMPI.B          #$2,D1
     BLT             CONTINUE_ROTATE_AS_BYTE
     ADD.B           (A2),D2
     MOVEA.L         D2,A6
-    MOVE.L          A6,START_ADDR
-    BRA             GET_END_ADDRESS
+    RTS
 CONTINUE_ROTATE_AS_BYTE
     ADD.B           (A2),D2
     LSR.B           #$4,D2
     MOVEA.L         D2,A6
-    MOVE.L          A6,START_ADDR
-    BRA             GET_END_ADDRESS
+    RTS
 ROTATE_AS_WORD
     JSR             CLEAR_REGS
     CMPI.B          #$4,D1
     BLT             CONTINUE_ROTATE_AS_WORD
     ADD.W           (A2),D2
     MOVEA.L         D2,A6
-    MOVE.L          A6,START_ADDR
-    BRA             GET_END_ADDRESS
+    RTS
 CONTINUE_ROTATE_AS_WORD
     ADD.W           (A2),D2
     LSR.W           #$4,D2
     MOVEA.L         D2,A6
-    MOVE.L          A6,START_ADDR
-    BRA             GET_END_ADDRESS
+    RTS
 ROTATE_AS_LONG
     JSR             CLEAR_REGS
     CMPI.B          #$8,D1
     BLT             CONTINUE_ROTATE_AS_LONG
     ADD.L           (A2),D2
     MOVEA.L         D2,A6
-    MOVE.L          A6,START_ADDR
-    BRA             GET_END_ADDRESS
+    RTS
 CONTINUE_ROTATE_AS_LONG
     ADD.L           (A2),D2
     CMPI            #$5,D1
@@ -124,23 +188,13 @@ ROTATE_BY_4
     BRA             CONTINUE_AS_LONG
 CONTINUE_AS_LONG    
     MOVEA.L         D2,A6
-    MOVE.L          A6,START_ADDR
-    BRA             GET_END_ADDRESS
-GET_END_ADDRESS
-    LEA				ASK_FOR_ENDING_ADDRESS_MSG,A1
-	MOVE.B			#13,D0
-	TRAP			#15
-    MOVEA.L         #$00000000,A1
-	MOVE.B          #2,D0               ; User Input
-	TRAP            #15                 ; Get User Input 
-	MOVE.L          #$00009000,A2       ; String Builder  
-    MOVEA.L         A2,A3 
-    JSR             LOOP_INPUT
-    MOVE.L          (A2),END_ADDR        
-    JMP             PROGRAM_START
+    RTS
+    
+  
+
 
 LOOP_INPUT
-    CMPI.B          #$00,(A1)
+    CMPI.B          #$00,D6
     BEQ             DONE_LOOP
     MOVE.B          (A1)+,D2
     LEA             ASCII_HEX,A0
@@ -149,6 +203,7 @@ LOOP_INPUT
     MOVE.B          (A1)+,D2
     ADD.B           (0,A0,D2),D3
     MOVE.B          D3,(A3)+
+    SUBI.L          #$1,D6
     BRA             LOOP_INPUT
 DONE_LOOP
     RTS
@@ -335,6 +390,7 @@ DEFAULT
 ***************************************************************************************************    
 
 ROTATEBYTE
+    JSR     CLEAR_REGS
     MOVE.B  (A2),D2
     LSR.L   #$4,D2
     RTS
