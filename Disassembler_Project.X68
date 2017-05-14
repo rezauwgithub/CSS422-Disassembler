@@ -1480,7 +1480,6 @@ PRINT_DATA
     
     JSR     PRINT_SPACE
     
-    JSR     PRINT_HASHTAG
     JSR     PRINT_DOLLAR
     
     MOVE.W  (A2),D2
