@@ -387,7 +387,7 @@ MOVENEXT
     ADDA.L  #$2,A2
     JSR     CLEAR_REGS
     CMPA.L  END_ADDR,A2
-    BGE     TERMINATE
+    BGT     TERMINATE
     JMP     TESTLOOP
     
 NOP_MOVEM_LEA_CLR_JSR_RTS_
@@ -1537,6 +1537,8 @@ PRINT_DATA
     JSR     TASK14
     
     JSR     PRINT_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
     
     JSR     PRINT_DOLLAR
     
@@ -1552,9 +1554,6 @@ PRINT_DATA
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
     
-    
-    
-
 PRINT_CURRENT_ADDR
     JSR     CLEAR_REGS
     MOVEA.L  #$00004000,A1
@@ -2258,6 +2257,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
