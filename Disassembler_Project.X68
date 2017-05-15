@@ -1009,6 +1009,8 @@ PRINT_MOVEM
     LEA     MOVEM_OP,A1
     JSR     TASK14
     JSR     PRINT_S3
+    ADDA.L  #$2,A2
+    MOVEA.L A2,A4
     
     CMPI.B  #$0,DIRECTION
     BEQ     PUSH_MOVEM
@@ -1021,17 +1023,15 @@ POP_MOVEM
     JSR     PRINT_COMMA
     
     JSR     CLEAR_REGS
-    MOVEA.L A2,A6
-    ADDA.L  #$2,A6
+    MOVEA.L A4,A6
     MOVE.W  (A6),D2
     JSR     PARSE_MOVEM
     JSR     PRINT_NEW_LINE
-    ADDA.L  #$2,A2
+    *ADDA.L  #$2,A2
     JMP     MOVENEXT
 PUSH_MOVEM
     JSR     CLEAR_REGS
-    MOVEA.L A2,A6
-    ADDA.L  #$2,A6
+    MOVEA.L A4,A6
     MOVE.W  (A6),D2
     JSR     PARSE_MOVEM
     
@@ -1042,7 +1042,7 @@ PUSH_MOVEM
     MOVE.B  DESTINATION_REG,D4
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
-    ADDA.L  #$2,A2
+    *ADDA.L  #$2,A2
     JMP     MOVENEXT
 
 PRINT_MOVEA
@@ -1739,36 +1739,36 @@ PARSE_MOVEM
 POP_PRE
     MOVE.B    #$0,D4   
 POP
-    CMPI.B    #$15,D4
-    BEQ       FINISH_PARSE
+    CMPI.B    #15,D4
+    BGT       FINISH_PARSE
     BTST.L    D4,D2
     JSR       PRINT_REG
-    ADDI.B    #$1,D4
+    ADDI.B    #1,D4
     CMPI.B    #$1,D7
     BEQ       PRINT_SLASH_POP_SUB
     BRA       CONTINUE_POP
 PRINT_SLASH_POP_SUB
-    CMPI.B    #$15,D4
-    BEQ       CONTINUE_POP
+    CMPI.B    #15,D4
+    BGT       CONTINUE_POP
     JSR       PRINT_SLASH
 CONTINUE_POP
     BRA       POP
     
     
 PUSH_PRE
-    MOVE.B    #$15,D4   
+    MOVE.B    #15,D4   
 PUSH
-    CMPI.B    #$0,D4
-    BEQ       FINISH_PARSE
+    CMPI.B    #0,D4
+    BLT       FINISH_PARSE
     BTST.L    D4,D2
     JSR       PRINT_REG
-    SUBI.B    #$1,D4
+    SUBI.B    #1,D4
     CMPI.B    #$1,D7
     BEQ       PRINT_SLASH_PUSH_SUB
     BRA       CONTINUE_PUSH
 PRINT_SLASH_PUSH_SUB
-    CMPI.B    #$0,D4
-    BEQ       CONTINUE_PUSH
+    CMPI.B    #0,D4
+    BLT       CONTINUE_PUSH
     JSR       PRINT_SLASH
 CONTINUE_PUSH
     BRA       PUSH
@@ -2040,70 +2040,70 @@ PRINT_REG
     MOVE.B      #$1,D7
     CMPI.B      #$0,DIRECTION
     BEQ         PUSH_PRINT
-    CMPI.B      #$F,D4
+    CMPI.B      #15,D4
     BEQ         PRINT_A7
-    CMPI.B      #$E,D4
+    CMPI.B      #14,D4
     BEQ         PRINT_A6
-    CMPI.B      #$D,D4
+    CMPI.B      #13,D4
     BEQ         PRINT_A5
-    CMPI.B      #$C,D4
+    CMPI.B      #12,D4
     BEQ         PRINT_A4
-    CMPI.B      #$B,D4
+    CMPI.B      #11,D4
     BEQ         PRINT_A3
-    CMPI.B      #$A,D4
+    CMPI.B      #10,D4
     BEQ         PRINT_A2
-    CMPI.B      #$9,D4
+    CMPI.B      #9,D4
     BEQ         PRINT_A1
-    CMPI.B      #$8,D4
+    CMPI.B      #8,D4
     BEQ         PRINT_A0
-    CMPI.B      #$7,D4
+    CMPI.B      #7,D4
     BEQ         PRINT_D7
-    CMPI.B      #$6,D4
+    CMPI.B      #6,D4
     BEQ         PRINT_D6
-    CMPI.B      #$5,D4
+    CMPI.B      #5,D4
     BEQ         PRINT_D5
-    CMPI.B      #$4,D4
+    CMPI.B      #4,D4
     BEQ         PRINT_D4
-    CMPI.B      #$3,D4
+    CMPI.B      #3,D4
     BEQ         PRINT_D3
-    CMPI.B      #$2,D4
+    CMPI.B      #2,D4
     BEQ         PRINT_D2
-    CMPI.B      #$1,D4
+    CMPI.B      #1,D4
     BEQ         PRINT_D1
-    CMPI.B      #$0,D4
+    CMPI.B      #0,D4
     BEQ         PRINT_D0
 PUSH_PRINT
-    CMPI.B      #$F,D4
+    CMPI.B      #15,D4
     BEQ         PRINT_D0
-    CMPI.B      #$E,D4
+    CMPI.B      #14,D4
     BEQ         PRINT_D1
-    CMPI.B      #$D,D4
+    CMPI.B      #13,D4
     BEQ         PRINT_D2
-    CMPI.B      #$C,D4
+    CMPI.B      #12,D4
     BEQ         PRINT_D3
-    CMPI.B      #$B,D4
+    CMPI.B      #11,D4
     BEQ         PRINT_D4
-    CMPI.B      #$A,D4
+    CMPI.B      #10,D4
     BEQ         PRINT_D5
-    CMPI.B      #$9,D4
+    CMPI.B      #9,D4
     BEQ         PRINT_D6
-    CMPI.B      #$8,D4
+    CMPI.B      #8,D4
     BEQ         PRINT_D7
-    CMPI.B      #$7,D4
+    CMPI.B      #7,D4
     BEQ         PRINT_A0
-    CMPI.B      #$6,D4
+    CMPI.B      #6,D4
     BEQ         PRINT_A1
-    CMPI.B      #$5,D4
+    CMPI.B      #5,D4
     BEQ         PRINT_A2
-    CMPI.B      #$4,D4
+    CMPI.B      #4,D4
     BEQ         PRINT_A3
-    CMPI.B      #$3,D4
+    CMPI.B      #3,D4
     BEQ         PRINT_A4
-    CMPI.B      #$2,D4
+    CMPI.B      #2,D4
     BEQ         PRINT_A5
-    CMPI.B      #$1,D4
+    CMPI.B      #1,D4
     BEQ         PRINT_A6
-    CMPI.B      #$0,D4
+    CMPI.B      #0,D4
     BEQ         PRINT_A7
     
 PRINT_D0
