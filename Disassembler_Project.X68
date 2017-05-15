@@ -54,7 +54,7 @@ DISPLAY_WELCOME_MSG
 GET_START_ADDRESS
     LEA				ASK_FOR_STARTING_ADDRESS_MSG,A1
 	MOVE.B			#13,D0
-	TRAP			    #15
+	TRAP			#15
 	MOVEA.L         #$00000000,A1
 	MOVE.B          #2,D0               ; User Input
 	TRAP            #15                 ; Get User Input 
@@ -479,6 +479,42 @@ LEA_
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
     BRA     PRINT_LEA
+MOVEM_
+    JSR     CLEAR_REGS
+    MOVE.B  #$3,SIZETYPE
+    MOVE.W  (A2),D2
+    JSR     BITS_6
+    MOVE.B  D2,DIRECTION
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_10
+    MOVE.B  D2,SIZE
+    
+    CMPI.B  #$1,DIRECTION
+    BNE     REGISTER_TO_MEMORY
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,SOURCE_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,SOURCE_REG
+    BRA     PRINT_MOVEM
+REGISTER_TO_MEMORY
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_11_13
+    MOVE.B  D2,DESTINATION_MODE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_14_16
+    MOVE.B  D2,DESTINATION_REG
+    BRA     PRINT_MOVEM    
 MOVE_MOVEA_
     MOVE.B  #$1,SIZETYPE                     ;BOOKMARK
     JSR     CLEAR_REGS
@@ -926,7 +962,6 @@ CMP_
     BRA     PRINT_CMP 
 BCC_
     RTS
-MOVEM_
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
@@ -968,6 +1003,46 @@ PRINT_JSR
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     
+    JMP     MOVENEXT
+PRINT_MOVEM
+    JSR     PRINT_CURRENT_ADDR
+    LEA     MOVEM_OP,A1
+    JSR     TASK14
+    JSR     PRINT_S3
+    
+    CMPI.B  #$0,DIRECTION
+    BEQ     PUSH_MOVEM
+POP_MOVEM
+    JSR     CLEAR_REGS
+    MOVE.B  SOURCE_MODE,D2
+    MOVE.B  SOURCE_REG,D4
+    JSR     PRINT_MODE_REG
+    
+    JSR     PRINT_COMMA
+    
+    JSR     CLEAR_REGS
+    MOVEA.L A2,A6
+    ADDA.L  #$2,A6
+    MOVE.W  (A6),D2
+    JSR     PARSE_MOVEM
+    JSR     PRINT_NEW_LINE
+    ADDA.L  #$2,A2
+    JMP     MOVENEXT
+PUSH_MOVEM
+    JSR     CLEAR_REGS
+    MOVEA.L A2,A6
+    ADDA.L  #$2,A6
+    MOVE.W  (A6),D2
+    JSR     PARSE_MOVEM
+    
+    JSR     PRINT_COMMA
+    
+    JSR     CLEAR_REGS
+    MOVE.B  DESTINATION_MODE,D2
+    MOVE.B  DESTINATION_REG,D4
+    JSR     PRINT_MODE_REG
+    JSR     PRINT_NEW_LINE
+    ADDA.L  #$2,A2
     JMP     MOVENEXT
 
 PRINT_MOVEA
@@ -1657,6 +1732,49 @@ CLEAR_REGS
     CLR.L   D2
     CLR.L   D4
     RTS 
+PARSE_MOVEM
+    CLR.L   D4
+    CMPI.B  #$0,DIRECTION
+    BEQ     PUSH_PRE
+POP_PRE
+    MOVE.B    #$0,D4   
+POP
+    CMPI.B    #$15,D4
+    BEQ       FINISH_PARSE
+    BTST.L    D4,D2
+    JSR       PRINT_REG
+    ADDI.B    #$1,D4
+    CMPI.B    #$1,D7
+    BEQ       PRINT_SLASH_POP_SUB
+    BRA       CONTINUE_POP
+PRINT_SLASH_POP_SUB
+    CMPI.B    #$15,D4
+    BEQ       CONTINUE_POP
+    JSR       PRINT_SLASH
+CONTINUE_POP
+    BRA       POP
+    
+    
+PUSH_PRE
+    MOVE.B    #$15,D4   
+PUSH
+    CMPI.B    #$0,D4
+    BEQ       FINISH_PARSE
+    BTST.L    D4,D2
+    JSR       PRINT_REG
+    SUBI.B    #$1,D4
+    CMPI.B    #$1,D7
+    BEQ       PRINT_SLASH_PUSH_SUB
+    BRA       CONTINUE_PUSH
+PRINT_SLASH_PUSH_SUB
+    CMPI.B    #$0,D4
+    BEQ       CONTINUE_PUSH
+    JSR       PRINT_SLASH
+CONTINUE_PUSH
+    BRA       PUSH
+FINISH_PARSE
+    RTS
+    
 ;----------------------------------------------------------------   
 PRINT_S1
     CMP.B   #$1,SIZE
@@ -1901,26 +2019,160 @@ PRINT_LENGTH
     BEQ     PRINT_W
     BRA     SHOW_ERROR
     BEQ     PRINT_L
-    BRA     show_error
-    
+    BRA     show_error  
 PRINT_B
     LEA         BYTE_SIZE,A1
     MOVE.B      #14,D0          
     TRAP        #15    
-    RTS
-    
+    RTS    
 PRINT_W
     LEA         WORD_SIZE,A1
     MOVE.B      #14,D0         
     TRAP        #15
     RTS 
-
 PRINT_L
     LEA         LONG_SIZE,A1
     MOVE.B      #14,D0         
     TRAP        #15
-    RTS 
+    RTS
+PRINT_REG
+    BEQ         FINISH_PRINT_REG
+    MOVE.B      #$1,D7
+    CMPI.B      #$0,DIRECTION
+    BEQ         PUSH_PRINT
+    CMPI.B      #$F,D4
+    BEQ         PRINT_A7
+    CMPI.B      #$E,D4
+    BEQ         PRINT_A6
+    CMPI.B      #$D,D4
+    BEQ         PRINT_A5
+    CMPI.B      #$C,D4
+    BEQ         PRINT_A4
+    CMPI.B      #$B,D4
+    BEQ         PRINT_A3
+    CMPI.B      #$A,D4
+    BEQ         PRINT_A2
+    CMPI.B      #$9,D4
+    BEQ         PRINT_A1
+    CMPI.B      #$8,D4
+    BEQ         PRINT_A0
+    CMPI.B      #$7,D4
+    BEQ         PRINT_D7
+    CMPI.B      #$6,D4
+    BEQ         PRINT_D6
+    CMPI.B      #$5,D4
+    BEQ         PRINT_D5
+    CMPI.B      #$4,D4
+    BEQ         PRINT_D4
+    CMPI.B      #$3,D4
+    BEQ         PRINT_D3
+    CMPI.B      #$2,D4
+    BEQ         PRINT_D2
+    CMPI.B      #$1,D4
+    BEQ         PRINT_D1
+    CMPI.B      #$0,D4
+    BEQ         PRINT_D0
+PUSH_PRINT
+    CMPI.B      #$F,D4
+    BEQ         PRINT_D0
+    CMPI.B      #$E,D4
+    BEQ         PRINT_D1
+    CMPI.B      #$D,D4
+    BEQ         PRINT_D2
+    CMPI.B      #$C,D4
+    BEQ         PRINT_D3
+    CMPI.B      #$B,D4
+    BEQ         PRINT_D4
+    CMPI.B      #$A,D4
+    BEQ         PRINT_D5
+    CMPI.B      #$9,D4
+    BEQ         PRINT_D6
+    CMPI.B      #$8,D4
+    BEQ         PRINT_D7
+    CMPI.B      #$7,D4
+    BEQ         PRINT_A0
+    CMPI.B      #$6,D4
+    BEQ         PRINT_A1
+    CMPI.B      #$5,D4
+    BEQ         PRINT_A2
+    CMPI.B      #$4,D4
+    BEQ         PRINT_A3
+    CMPI.B      #$3,D4
+    BEQ         PRINT_A4
+    CMPI.B      #$2,D4
+    BEQ         PRINT_A5
+    CMPI.B      #$1,D4
+    BEQ         PRINT_A6
+    CMPI.B      #$0,D4
+    BEQ         PRINT_A7
     
+PRINT_D0
+    LEA         D0_REG,A1
+    JSR         TASK14
+    RTS         
+PRINT_D1
+    LEA         D1_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_D2
+    LEA         D2_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_D3
+    LEA         D3_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_D4
+    LEA         D4_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_D5
+    LEA         D5_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_D6
+    LEA         D6_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_D7
+    LEA         D7_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_A0
+    LEA         A0_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_A1
+    LEA         A1_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_A2
+    LEA         A2_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_A3
+    LEA         A3_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_A4
+    LEA         A4_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_A5
+    LEA         A5_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_A6
+    LEA         A6_REG,A1
+    JSR         TASK14
+    RTS 
+PRINT_A7
+    LEA         A7_REG,A1
+    JSR         TASK14
+    RTS
+FINISH_PRINT_REG
+    MOVE.B      #$0,D7
+    RTS
 * --------------------
 * * Print comma ', ' *
 * --------------------
@@ -1934,8 +2186,7 @@ PRINT_COMMA
 * ---------------------
 PRINT_HASHTAG
     LEA     HASHTAG,A1
-    MOVE.B  #14,D0
-    TRAP    #15
+    JSR     TASK14
     RTS
     
 * ---------------------
@@ -1943,8 +2194,15 @@ PRINT_HASHTAG
 * ---------------------
 PRINT_DOLLAR
     LEA     DOLLAR,A1
-    MOVE.B  #14,D0
-    TRAP    #15
+    JSR     TASK14
+    RTS
+    
+* ---------------------
+* ** Print SLASH / **
+* ---------------------    
+PRINT_SLASH
+    LEA     SLASH,A1
+    JSR     TASK14
     RTS
 * ------------------
 * * Print new line *
@@ -2038,6 +2296,7 @@ PRESS_KEY_CONTINUE              DC.B    'Please press the ENTER key to continue.
 *----------------------------------------------------------
 DOLLAR      DC.B    '$',0
 HASHTAG     DC.B    '#',0
+SLASH       DC.B    '/',0
 PLUS        DC.B    '+',0
 MINUS       DC.B    '-',0
 PAREN_OPEN  DC.B    '(',0
@@ -2257,6 +2516,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
