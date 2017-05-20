@@ -1734,27 +1734,19 @@ CLEAR_REGS
     RTS 
 PARSE_MOVEM
     CLR.L   D4
+    CLR.L   D5 
+    MOVE.B  #0,D5 
     CMPI.B  #$0,DIRECTION
     BEQ     PUSH_PRE
 POP_PRE
-    MOVE.B    #$0,D4   
+    MOVE.B    #0,D4    
 POP
     CMPI.B    #15,D4
     BGT       FINISH_PARSE
     BTST.L    D4,D2
     JSR       PRINT_REG
     ADDI.B    #1,D4
-    CMPI.B    #$1,D7
-    BEQ       PRINT_SLASH_POP_SUB
-    BRA       CONTINUE_POP
-PRINT_SLASH_POP_SUB
-    CMPI.B    #15,D4
-    BGT       CONTINUE_POP
-    JSR       PRINT_SLASH
-CONTINUE_POP
     BRA       POP
-    
-    
 PUSH_PRE
     MOVE.B    #15,D4   
 PUSH
@@ -1763,14 +1755,6 @@ PUSH
     BTST.L    D4,D2
     JSR       PRINT_REG
     SUBI.B    #1,D4
-    CMPI.B    #$1,D7
-    BEQ       PRINT_SLASH_PUSH_SUB
-    BRA       CONTINUE_PUSH
-PRINT_SLASH_PUSH_SUB
-    CMPI.B    #0,D4
-    BLT       CONTINUE_PUSH
-    JSR       PRINT_SLASH
-CONTINUE_PUSH
     BRA       PUSH
 FINISH_PARSE
     RTS
@@ -2107,68 +2091,148 @@ PUSH_PRINT
     BEQ         PRINT_A7
     
 PRINT_D0
+    CMPI.B      #0,D5
+    BEQ         JUST_D0
+    JSR         PRINT_SLASH
+JUST_D0    
     LEA         D0_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS         
 PRINT_D1
+    CMPI.B      #0,D5
+    BEQ         JUST_D1
+    JSR         PRINT_SLASH
+JUST_D1
     LEA         D1_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_D2
+    CMPI.B      #0,D5
+    BEQ         JUST_D2
+    JSR         PRINT_SLASH
+JUST_D2
     LEA         D2_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_D3
+    CMPI.B      #0,D5
+    BEQ         JUST_D3
+    JSR         PRINT_SLASH
+JUST_D3
     LEA         D3_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_D4
+    CMPI.B      #0,D5
+    BEQ         JUST_D4
+    JSR         PRINT_SLASH
+JUST_D4
     LEA         D4_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_D5
+    CMPI.B      #0,D5
+    BEQ         JUST_D5
+    JSR         PRINT_SLASH
+JUST_D5
     LEA         D5_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_D6
+    CMPI.B      #0,D5
+    BEQ         JUST_D6
+    JSR         PRINT_SLASH
+JUST_D6
     LEA         D6_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_D7
+    CMPI.B      #0,D5
+    BEQ         JUST_D7
+    JSR         PRINT_SLASH
+JUST_D7
     LEA         D7_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_A0
+    CMPI.B      #0,D5
+    BEQ         JUST_A0
+    JSR         PRINT_SLASH
+JUST_A0
     LEA         A0_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_A1
+    CMPI.B      #0,D5
+    BEQ         JUST_A1
+    JSR         PRINT_SLASH
+JUST_A1
     LEA         A1_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_A2
+    CMPI.B      #0,D5
+    BEQ         JUST_A2
+    JSR         PRINT_SLASH
+JUST_A2
     LEA         A2_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_A3
+    CMPI.B      #0,D5
+    BEQ         JUST_A3
+    JSR         PRINT_SLASH
+JUST_A3
     LEA         A3_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_A4
+    CMPI.B      #0,D5
+    BEQ         JUST_A4
+    JSR         PRINT_SLASH
+JUST_A4
     LEA         A4_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_A5
+    CMPI.B      #0,D5
+    BEQ         JUST_A5
+    JSR         PRINT_SLASH
+JUST_A5
     LEA         A5_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_A6
+    CMPI.B      #0,D5
+    BEQ         JUST_A6
+    JSR         PRINT_SLASH
+JUST_A6
     LEA         A6_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS 
 PRINT_A7
+    CMPI.B      #0,D5
+    BEQ         JUST_A7
+    JSR         PRINT_SLASH
+JUST_A7
     LEA         A7_REG,A1
     JSR         TASK14
+    ADDI.B      #1,D5
     RTS
 FINISH_PRINT_REG
     MOVE.B      #$0,D7
@@ -2516,6 +2580,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
