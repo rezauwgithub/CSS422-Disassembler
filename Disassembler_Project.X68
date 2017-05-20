@@ -961,7 +961,20 @@ CMP_
     MOVE.B  D2,SOURCE_REG
     BRA     PRINT_CMP 
 BCC_
-    RTS
+    MOVE.B  #$4,SIZETYPE
+    
+    JSR     CLEAR_REGS    
+    MOVE.W  (A2),D2
+    JSR     BITS_5_8
+    MOVE.B  D2,CONDITION
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_16
+    MOVE.B  D2,DISPLACEMENT
+    
+    BRA     PRINT_Bcc
+    
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
@@ -1606,6 +1619,109 @@ CONTINUE_PRINT_ROD1
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
     
+    
+    
+PRINT_Bcc
+    JSR     PRINT_CURRENT_ADDR
+    CMPI.B  #$4,CONDITION
+    BEQ     PRINT_BCC_
+    CMPI.B  #$E,CONDITION
+    BEQ     PRINT_BGT
+    CMPI.B  #$F,CONDITION
+    BEQ     PRINT_BLE
+PRINT_BCC_
+    LEA     BCC_OP,A1
+    JSR     TASK14
+    BRA     CONTINUE_PRINT_Bcc
+PRINT_BGT
+    LEA     BGT_OP,A1
+    JSR     TASK14
+    BRA     CONTINUE_PRINT_Bcc
+PRINT_BLE
+    LEA     BLE_OP,A1
+    JSR     TASK14
+    BRA     CONTINUE_PRINT_Bcc
+CONTINUE_PRINT_Bcc
+    JSR     PRINT_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_ONE_SPACE
+    JSR     PRINT_DOLLAR
+    CMPI.B  #$0,DISPLACEMENT
+    BEQ     PRINT_Bcc_DATA
+    CMPI.B  #$FF,DISPLACEMENT
+    BEQ     PRINT_Bcc_DATA
+    
+    JSR     CLEAR_REGS
+    MOVE.L  A2,D2
+    ADDI.L  #$2,D2
+    MOVE.B  DISPLACEMENT,D3
+    ADD.L   D2,D3
+    BRA     BYPASS_Bcc
+    
+PRINT_Bcc_DATA
+    JSR     CLEAR_REGS
+    MOVEA.L A2,A6
+    ADDA.L  #$2,A6
+    MOVE.W  (A6),D3
+    MOVE.L  A2,D2
+    ADDI.L  #$2,D2
+    ADD.L   D2,D3
+    ADDA.L  #$2,A2
+BYPASS_Bcc    
+    CMPI.L  #$7FFF,D3
+    BLE     PRINT_Bcc_WORD
+    BGT     PRINT_Bcc_LONG
+
+PRINT_Bcc_WORD
+    CLR.L   D5
+    MOVE.W  D3,D5
+    CLR.L   D3
+    
+    JSR     CLEAR_REGS
+    MOVE.W  D5,D2
+    JSR     BITS_1_8
+    MOVE.B  D2,D3
+    JSR     BYPASS
+    
+    JSR     CLEAR_REGS
+    MOVE.W  D5,D2
+    JSR     BITS_9_16
+    MOVE.B  D2,D3
+    JSR     BYPASS
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+PRINT_Bcc_LONG
+    CLR.L   D5
+    MOVE.L  D3,D5
+    CLR.L   D3
+    
+    JSR     CLEAR_REGS
+    MOVE.L  D5,D2
+    JSR     BITS_1_8_LONG
+    MOVE.B  D2,D3
+    JSR     BYPASS
+    
+    JSR     CLEAR_REGS
+    MOVE.L  D5,D2
+    JSR     BITS_9_16_LONG
+    MOVE.B  D2,D3
+    JSR     BYPASS
+    
+    JSR     CLEAR_REGS
+    MOVE.W  D5,D2
+    JSR     BITS_1_8
+    MOVE.B  D2,D3
+    JSR     BYPASS
+    
+    JSR     CLEAR_REGS
+    MOVE.W  D5,D2
+    JSR     BITS_9_16
+    MOVE.B  D2,D3
+    JSR     BYPASS
+    JSR     PRINT_NEW_LINE
+    JMP     MOVENEXT
+    
 PRINT_DATA 
     JSR     PRINT_CURRENT_ADDR
     LEA     DATA_OP,A1
@@ -1625,8 +1741,8 @@ PRINT_DATA
     JSR     BITS_9_16
     MOVE.B  D2,D3
     JSR     BYPASS
-
     JSR     PRINT_NEW_LINE
+    ADDA.L  #$2,A2
     JMP     MOVENEXT
     
 PRINT_CURRENT_ADDR
@@ -1676,8 +1792,18 @@ BITS_5_7
     LSR.W #$8,D2
     LSR.W #$5,D2
     RTS
+BITS_5_8
+    LSL.W	#$4,D2
+    LSR.W	#$8,D2
+    LSR.W	#$4,D2
+    RTS
 BITS_1_8
     LSR.W #$8,D2
+    RTS
+BITS_1_8_LONG
+    LSR.L #$8,D2
+    LSR.L #$8,D2
+    LSR.L #$8,D2
     RTS
 BITS_8
     LSL.W #$7,D2
@@ -1721,6 +1847,12 @@ BITS_11_13
 BITS_9_16
     LSL.W #$8,D2
     LSR.W #$8,D2
+    RTS
+BITS_9_16_LONG
+    LSL.L   #$8,D2
+    LSR.L   #$8,D2
+    LSR.L   #$8,D2
+    LSR.L   #$8,D2
     RTS
 BITS_14_16
     LSL.W #$8,D2
@@ -2392,9 +2524,11 @@ ASR_OP      DC.B    'ASR',0
 ROL_OP      DC.B    'ROL',0
 ROR_OP      DC.B    'ROR',0
 CMP_OP      DC.B    'CMP',0
-BCC_OP      DC.B    'BCC',0
 JSR_OP      DC.B    'JSR',0
 RTS_OP      DC.B    'RTS',0
+BCC_OP      DC.B    'BCC',0
+BGT_OP      DC.B    'BGT',0
+BLE_OP      DC.B    'BLE',0
 DATA_OP     DC.B    'DATA',0
 *-------------------SIZE OF OP-----------------------------
 BYTE_SIZE   DC.B    '.B   ',0
@@ -2482,6 +2616,8 @@ DIRECTION               DS.B    1
 SIZETYPE                DS.B    1
 CURRENT_ADDR            DS.L    1
 OUTPUT_COUNTER          DS.B    1
+CONDITION               DS.B    1
+DISPLACEMENT            DS.B    1
 
 
 START_ADDR              DS.L    1
@@ -2553,9 +2689,7 @@ HEX_ASCII
       DC.B    $44
       DC.B    $45
       DC.B    $46    
-
-
-
+      
     ORG    $5000
 ASCII_HEX
     DCB.B   48,0
@@ -2580,6 +2714,8 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
+
 
 
 

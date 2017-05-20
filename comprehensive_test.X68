@@ -71,29 +71,29 @@
     
     MOVEQ  #$70,D7                 
     
-*    MOVEM.L  (A3),D0/D2/D4/D6/A1/A3/A5/A7            
-*    MOVEM.L  (A4)+,D0/D2/D4/D6/A1/A3/A5/A7          
-*    MOVEM.L  $6000,D0/D2/D4/D6/A1/A3/A5/A7          
-*    MOVEM.L  $8000,D0/D2/D4/D6/A1/A3/A5/A7          
-*    MOVEM.L  (SP)+,D0-D7/A0-A7                       
-*    
-*    MOVEM.L  A0/A2/A4/A6/D1/D3/D5/D7,(A3)           
-*    MOVEM.L  A0/A2/A4/A6/D1/D3/D5/D7,-(A5)           
-*    MOVEM.L  A0/A2/A4/A6/D1/D3/D5/D7,$6000          
-*    MOVEM.L  A0/A2/A4/A6/D1/D3/D5/D7,$8000          
-*    MOVEM.L  A7-A0/D7-D0,-(SP)                       
-*    
-*    MOVEM.W  (A3),D0/D2/D4/D6/A1/A3/A5/A7            
-*    MOVEM.W  (A4)+,D0/D2/D4/D6/A1/A3/A5/A7          
-*    MOVEM.W  $6000,D0/D2/D4/D6/A1/A3/A5/A7           
-*    MOVEM.W  $8000,D0/D2/D4/D6/A1/A3/A5/A7           
-*    MOVEM.W  (SP)+,D0-D7/A0-A7                      
-*    
-*    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,(A3)            
-*    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,-(A5)           
-*    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,$6000           
-*    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,$8000           
-*    MOVEM.W  A7-A0/D7-D0,-(SP)                       
+    MOVEM.L  (A3),D0/D2/D4/D6/A1/A3/A5/A7            
+    MOVEM.L  (A4)+,D0/D2/D4/D6/A1/A3/A5/A7          
+    MOVEM.L  $6000,D0/D2/D4/D6/A1/A3/A5/A7          
+    MOVEM.L  $8000,D0/D2/D4/D6/A1/A3/A5/A7          
+    MOVEM.L  (SP)+,D0-D7/A0-A7                       
+    
+    MOVEM.L  A0/A2/A4/A6/D1/D3/D5/D7,(A3)           
+    MOVEM.L  A0/A2/A4/A6/D1/D3/D5/D7,-(A5)           
+    MOVEM.L  A0/A2/A4/A6/D1/D3/D5/D7,$6000          
+    MOVEM.L  A0/A2/A4/A6/D1/D3/D5/D7,$8000          
+    MOVEM.L  A7-A0/D7-D0,-(SP)                       
+    
+    MOVEM.W  (A3),D0/D2/D4/D6/A1/A3/A5/A7            
+    MOVEM.W  (A4)+,D0/D2/D4/D6/A1/A3/A5/A7          
+    MOVEM.W  $6000,D0/D2/D4/D6/A1/A3/A5/A7           
+    MOVEM.W  $8000,D0/D2/D4/D6/A1/A3/A5/A7           
+    MOVEM.W  (SP)+,D0-D7/A0-A7                      
+    
+    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,(A3)            
+    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,-(A5)           
+    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,$6000           
+    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,$8000           
+    MOVEM.W  A7-A0/D7-D0,-(SP)                       
     
     ADD.B  D0,D0                 
     ADD.B  (A1),D2                
@@ -468,15 +468,17 @@
     ROL.W    #$8,D1
     ROL.L    D7,D1
     
-*    BCC     FARGONE
-*    BGT     FARGONE
-*    BLE     FARGONE
+    BCC     FARGONE
+    BGT     FARGONE
+    BLE     FARGONE
     
     JSR     FARGONE
     JSR     $A000
     JSR     $4000
 FARGONE
     RTS
+
+
 
 
 
