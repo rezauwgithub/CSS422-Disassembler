@@ -246,8 +246,12 @@ TESTLOOPKEY
     MOVE.B  #5,D0
     TRAP    #15
     CMPI.B  #$D,D1
-    BEQ     CONTINUE_TESTLOOP
+    BEQ     CLEAR_SCREEN
     BRA     TESTLOOPKEY
+CLEAR_SCREEN
+    MOVE.B  #11,D0
+    MOVE.W  #$FF00,D1
+    TRAP    #15
 CONTINUE_TESTLOOP
     ADDI.B  #1,OUTPUT_COUNTER
     JSR ROTATEBYTE
@@ -388,6 +392,7 @@ MOVENEXT
     JSR     CLEAR_REGS
     CMPA.L  END_ADDR,A2
     BGT     TERMINATE
+    JSR     CLEAR_VARS
     JMP     TESTLOOP
     
 NOP_MOVEM_LEA_CLR_JSR_RTS_
@@ -1866,6 +1871,17 @@ CLEAR_REGS
     CLR.L   D2
     CLR.L   D4
     RTS 
+CLEAR_VARS
+    CLR.B   SIZE
+    CLR.B   SIZETYPE
+    CLR.B   SOURCE_MODE
+    CLR.B   SOURCE_REG
+    CLR.B   DESTINATION_MODE
+    CLR.B   DESTINATION_REG
+    CLR.B   DIRECTION
+    CLR.B   CONDITION
+    CLR.B   DISPLACEMENT
+    RTS
 PARSE_MOVEM
     CLR.L   D4
     CLR.L   D5 
@@ -2464,8 +2480,21 @@ TASK14
     TRAP    #15
     RTS
 TERMINATE
+    LEA     PROMPT_RESTART_OR_TERMINATE,A1
+    JSR     TASK13
+    MOVE.B  #5,D0
+    TRAP    #15
+    CMPI.B  #$D,D1
+    BEQ     RESTART_DISASSEMBLER
     MOVE.B  #9,D0
     TRAP    #15
+RESTART_DISASSEMBLER
+    JSR     CLEAR_REGS
+    JSR     CLEAR_VARS
+    MOVE.B  #11,D0
+    MOVE.W  #$FF00,D1
+    TRAP    #15
+    JMP     GET_START_ADDRESS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
@@ -2488,7 +2517,8 @@ WELCOME_MSG						DC.B	'Welcome to our Disassembler!',0
 ASK_FOR_STARTING_ADDRESS_MSG	DC.B    'Please specify the starting address',0
 ASK_FOR_ENDING_ADDRESS_MSG		DC.B    'Please specify the ending address',0
 INVALID_USER_INPUT_MSG			DC.B	'Please enter a valid address ($00002000 - $000FFFFF)',0
-PRESS_KEY_CONTINUE              DC.B    'Please press the ENTER key to continue...',0	 
+PRESS_KEY_CONTINUE              DC.B    'Please press the ENTER key to continue...',0
+PROMPT_RESTART_OR_TERMINATE     DC.B    'Done! Press ENTER to try a new memory location, or any other key to terminate...',0 
 
 
 *----------------------------------------------------------
