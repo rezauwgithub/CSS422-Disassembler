@@ -772,7 +772,8 @@ TO_DATA_AND
     MOVE.B  D2,SOURCE_REG
     BRA     PRINT_AND
 MULS_
-    MOVE.B  #$4,SIZETYPE
+    MOVE.B  #$2,SIZETYPE
+    MOVE.B  #$1,SIZE
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
     JSR     BITS_5_7
@@ -841,7 +842,8 @@ TO_DATA_OR
     MOVE.B  D2,SOURCE_REG
     BRA     PRINT_OR 
 DIVU_
-    MOVE.B  #$4,SIZETYPE
+    MOVE.B  #$2,SIZETYPE
+    MOVE.B  #$1,SIZE
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
     JSR     BITS_5_7
@@ -2714,6 +2716,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
