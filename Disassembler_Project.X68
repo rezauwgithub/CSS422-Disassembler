@@ -4,6 +4,107 @@
 * Date       : Sometime in the future, but now back in the present
 * Description: Taking back op-code from Skynet, one byte at a time
 *----------------------------------------------------------- 
+
+*
+*                                                 .                                                                     
+*                                                                          .................                                                                     
+*                                                         .... .............$I7$ZZZ$7I??.......... ......   .                                                    
+*                                                         .      .. ,~788D8ON$8O888OOOOZOZ88I:.... .....                                                         
+*                                                      . ......+DDDNND8OO8OOMN$ZOZ8OZZZ$OZOOZOOOONN8~  . ....                                                    
+*                                                  ....  ...MNDOO8OOODMOOOOOM8MOOOOOO$I$$$I7$$ZZZOO8OMM~.....                                                    
+*                                           .      ....=NN8888DOOOO$NOZZZ$ZZZZ$ZZ$NO88ZZOZ$ZZZ$77?II$ZOMZDO, ..                                                  
+*                                          ..........:8D8D8OZNOOO$8$$ZZZ+7$Z$ZZ$Z7N$$$$$$$$$ZD8$7$MZNZNDZZZDM~... .                                              
+*                                           .......=MNO8D8O8OOZ7ZO$$I$7Z$8888888ZOO$7$$$777777$I7M7IIDM$$$ZZOOM.....                                             
+*                                          .....IND8O8OOOOO$MMDOOZ$$$$$$$$7777777777777IIIIIIII?I???I8+??7=+$ZOOM?...                                            
+*                                           ..IMOMMOOOZZ88I$$Z$$$$$$$777777777IIIIIIIIIIII????????++++=ZZ:8M=+ZOODN. .                                           
+*                                        ...:MM88NNNNDOZZ$$$$$$$7777777IIIIIIIIIIIIIII???????????++=====~.M~=M=+ZOOMN.... .                                      
+*                                      . ..$MMD88OOOOZ$ZNM7$$$7777IIIIIIIIIIIIII??I??????????????++====~.DMMN.MN.$ZDMM=..                                        
+*                                      ...MMMD888OOZZMD8O7$7777IIIIII?????????????????????????++++====~,~MMMMM8.IM~Z8DM: .                                       
+*                                    . ..MMMDD88OOOZZZO$$$$7777III?????????????????????+????I??++===~=~.NMMMDMMMI.7IZMNM~ ..                                     
+*                                    ...MMMDD888OOZZZ$$$777IIIII7??++++++++++????????+++???I??+++===~=~~.$M8MMMMO.,:=O$MM=..                                     
+*                                    ..MMMMMD88OOOZZ$$$7IIII???I+??+++++++++++?++++++++++??$??+====~~~~~:~~NDDMM:...,?$MMN..                                     
+*                                    .ZDMMMMD88OOZZ$$77II???????~?+++==++++++++++++?++++++I7?++==~~~~~~~:::,:MM7,.....ODMM+.                                     
+*                                    =MNMMMMN88OZZ$777I???+++++I:I+=======+===+++++++++?+?$7++===~~::::::,,,,,.... ...8ZMMM...                                   
+*                                    MMMMMMMM8OOZ$7III??++++=++?=+?+=:=:~~=====+=+=++++++ZDZ++===~~~~:::,,,,,.........NI~MM=                                     
+*                                    MMMNMMMNMMMM8$??++=======+++87?++=,+I::~=====+=++=?+?M+++==~~~~::::,,,,..... ...,?~MDMD  .                                  
+*                                  . MMM=NMNMOZ$77ZD7+========+++$O+?+M..+=+7I+~~=+=O==+IOM:?===~~~~~::::,,,........,8,7M,MM....                                 
+*                                .  ,MM=OMM8NO$77??+:O7=~=~~~~=++.MM.,MN=.=~~~==+??~D$:?7MD:+===~~~~::::,,,,,,IOO$7D8N+DNM+M....                                 
+*                                 ..8MM=ONMDMZ$7I?+==:=+~~~~~~=++~8MI?NM8.+====+===.DNM=MNO~+===~~~~::::,,,,==:~~~+O88,NNM8N,...                                 
+*                                  .NNMO.D~MNO$7I+=~=~~,I::~~~==++,MNNMMM~:?=I????=MNNMDOMI=====~~~::::,::::::::~=?O8N,MNMD==...                                 
+*                                .. M8NM?DMMD8$7?+=~~~::::~:~~~=++,MNMMMM8.ZZI+?I?=MMMMN?M~+====~~~::::,,,,::::~:D~+N$,MDM87$..  .                               
+*                                   MONM.D8MDD$I?+=~~~::,,,~::~==+~=MMMMMM.Z8DDDO=7MMMMNMM:+====~~~:::,,,,::::::$+OMMM.MDMNN8.   .                               
+*                                 ..M8NM778MMD$I+==~~:::,,,.:,:~=++,MMMMMM,=~=++??7MMMNMMO==+==~~~::,..,.,:::~::Z8$MMM,MDMM8N.   .                               
+*                                  .MNDOM?MMMD7?=~:,:,,,,,,,..~.~==++MMMMM~=~=++77=MMNMI~======~:.....:+Z8I=~,+:$88$NM,DNMMOO,   .                               
+*                                ...MNNMZMMMMD7I+~:,:,+ODN8O=..,7::======+7ZMMNZZOO~::,:~:,+M?+OMZ~:......,,:=,?8OD~::,NDNM8+?   .                               
+*                                ..,MNMMODMMMD$I+=~:::,,.....,:?8MDM=~======+++==::..,.+.MMM7=:......,,::~.:=++..NZMMM.888MN+Z..                                 
+*                                  IMNNM8MMMN87?+=~:::,,,,...... =::~+7DMO=,+?:~=::.7MN:,===,=~........,,,,,,....+DNO~+NDZMMI8.. .                               
+*                                ..IMDMMMMMMN8I+==~::,,,,,,,,....:~+====~::~8MNMMMM?...7I~=I~:.........,:,,,......O88$?MNZDMZO....                               
+*                                . 8NMMMMMMMD7?+=~::,,,,,,,,,,,...::==+II?==~?Z++~:  ..~~~=~:,........,:::,,,,.. .,D$8NIMMMMD=...                                
+*                                ..MMMMMMMMM$7+=~:,,,.,...,,,,,.. .M:=~==~~:~==Z:7,....=::=~:...........,,::,,.....MN8M,M~II7~:..                                
+*                              ....MMMMMMMM$7I+~~,,,,,....,..,,.Z..:M8M+,:,:..MMMM+....NMMM8,............  ....,~=,ZMDM,Z$7$?,~..                                
+*                              ...=MMMMMNMDDDDN$7=:..   .....,:~$.,.INMMMMM . DMNM+....DNMNO$........,~IDMOI=:..,:~I8NN,,MI$?~I..                                
+*                                .+MMMMNMDI+=~:,...:+IODN88I+~+$?=?$D$Z8~$~...$NZD=7=..I7O$7~,.:$8MNO~...,~~~~:::,:=DZD:,N$$?~Z..                                
+*                                .8MMMNDM8DMMMOZD88NMNNZ8Z$7I??$7$7$D?MMD7$=:ZZ7NN$N~~8$MM$MD==~?$OZOZODNMMNMNDIDNN,OZ7~:+M8Z.O..                                
+*                                .NMMMMMMMNNDNMMMMMNMMMMMMMNDOOO8OOZ8ZO8MI$7=N$MMMN?$O$MDDI$ZO8O8MMMMNMMMMMMMNMMMMOZ:N.::,MDM,O .                                
+*                                .MMMMMMMZDMMMMMDMMMMMM?DN$8NM8N:NMMZM8Z7I+ZOOMMMMND87?M=M8IMMMNNDMN8MZ$MM$$8NMMMMM87+.,IM.MZ?Z..                                
+*                                ,MOMMMMM8ZNMMMMMNM~=NNM+DI88D8$MMNMMM$8N8NND$.?=I:MMND8ZDMMM$.MMODNDM?7I?DN8DMMNMNO+=,IMNDZDM$ .                                
+*                               ..D8MMMMM$O$ZDNMMMNMM8D?,8ZZ$OOODNDM8MNMMMO=.M.:++:M+MNNMMNMMMDMDZZZZ$ON:=DD8DMNNNMZ+I.MMMM?MM$...                               
+*                               ..OMMM+MM7D7:8DNMMNNMDZDI$Z?ZZ$$N8ZMMMNMM8ON:M~~=+:NNZNNNMNMMMODNO$OZ7OD,MZZNZMNNO78.?+?MMM:NMI ..                               
+*                            .....NMM?+MMI8O.Z78NMNNMMZZ=8ZZZZO8DNDNMMMZN88M+M??++:NDDOZNNMMNMZMOOZZZODO7:$N8DOMO?,:,+=:=$~~OD?...                               
+*                              .. MMI?DMM++:?$?ZMMMMMMNMD$ONDDNZDD8ZIMMN8OZMI$7MMN7?MND:8DNMZNNMN888DOIDODMDMMMMZZN,:Z::~::=8D=...                               
+*                            .....MM77MNM~~+MNNNMN$MMNMMNOZDOOD8NNNMMMNOM$ZN+ONDO8NZ7D8~ZZDNMNMMMMNMNDMNNM+.DMNMNMM,:$+::::=Z8,...                               
+*                            ....:MM$MM8M?~IDMMNMMMMDM:ZDMNDMMMMMMMND8$8MON8?INMNNMD~8M+N77DDMDNMMMNMMMMMMDNDNNMNM8.?Z$~:~:+ON....                               
+*                            ....$MMNNMDMI?I+MMMMNMNMMMNMMMMMMMMMD8ZO7DO8NNN+:M$DOM7:ZNZZ8N?.IZDNNMMMMMNMD8NNNNDM$.+?Z87=:=IDM ....                              
+*                            ... MMM8MMOM$II$7DNNNNDD8NNDDDDD8$~:,~ZD?:OINMI.?MMDMM:==+D$~.,?MND?,,:~?7I$8OOZ$?$.=:,I?Z$I=I?DM....                               
+*                              . MMMMMM8N$I??=++II$OOOO7+~:,+:?OM$7IZ8OZ+=MMDNMMDZMOZ+MN...,?.~~OMM$??:~..:,....,,::+,+7I?=+ZN....                               
+*                              ..MMMM8MO+D7?+=:,......,ODMM8,+.~,?7+?ZO?+M7MNMMMMMMMMNM,+,:..::,::~,..?MMMMMN...,,O.O:~~=?MM$I....                               
+*                            ....MMMMNO$$=7?+~~~,.I.+MMMMI.?I,I+=$$=$OZ:MD,=$MMMOIMMMD7=+D=7:~I,?I+:77=~,,.,:+8MO?+D.~~,I8DMZ=7....                              
+*                              ..ZMMMZ$$7I.NNN=~:8OM+......=:~::=.:~==.NDM$7MMMMZ7MMMMD.7?N.~,,~:::::,,..........,,:::::+OI$$I==..                               
+*                              ..,MMNO$77I??,MDM8I.,.....,,:?=7=~,?.I+NMDM$7MMMMI=MMMMOI?~DO+:I.+I=,I7...........,,::::.M:D:,ZI...                               
+*                              ..:MMNOZ7I???+=~~~~:,:,.,,,,,,..,....,Z7DD8=MMMMM+~MMMMMZ:OOD.,,.,................,,,,,::ID,7O8$...                               
+*                               ..MMMOZZ$I??++=~=~~::,,,,....,,::,...$ODDO8MMMMM++MMMMM8Z.M8N~...=~... .. .......,,,,::~+~I,NM~ .                                
+*                               ..IMMN8Z$$III++=~~~~::,....:7M$MMMMI~8,?OZNMMMMMI+NMMMMMDD=ND7 7MMMN8=. .........,,,,::~++~~+D. ...                              
+*                                ..=MMM8OZ$Z$I+===~~:,,,+,$OMM7MMMMNIMM88ZMMMMMM7?DMMMMMMNM?~.~MMMNOMD7Z,........,,,:::~~=,:, .                                  
+*                                ...?MMM8ZZ$$$I+===~~,??O?OOMI:MMMMM8~~~~?MMMMMN8NNMMMMMMNND?.+MNMM+MMNOIZ:,.,,.,,,:~~~.=$+. .                                   
+*                                    ~MMMNODD8OOZO88Z8MMMMMNM8:ZNMMMI=,$OONMMM8~,~.MNNMMM8I~. 78NNM:ZMNDDNNNOD8DNOD$+=.I,~~...                                   
+*                                    .MMMM888Z8DNNZDMMNMNNOMM~+,MIMM7?..,?MMMMDM88I:NNN8~~:...I$ZMZ:.DNM:MMMNN8+D8ZZ8ZID8~=.                                     
+*                                    .,MMMNMMMDMMI+MMMMNNDDDO:7O+7NND,...:7~.?ODZD?O. .::.....=D~$7,:$M=NMDD7M87M~.:7M:ZNZ$.                                     
+*                                    ..MMMMMMM,MD8,MMNNMMN8DZZ7:MNNNN,.....,.:?,8M,:..+I?,:=,.:OINZ:78NM$DINN+~~$=,:~MINND$.                                     
+*                                    ..8MMMNNMOMN8IINMNNMNMO$=7:MDDND,,,:,?M$~:..NM::,.MM7,,,,.IZN7:ID?I+88ND~:,?IN..8NNNM$.                                     
+*                                    ..,88NNNMNMM~.+8MMNMMZMO+ZONIMN?,,.:,Z8===~:~=~=~=+?,::,,.,78O8IO=?:+MDI::,?MM.M8?,:.I.                                     
+*                                    ...$MNMMNMNNZ.=8OMNNMMN?Z88M?DZ:,....,::=~=~=====~:~,,,....~DZN?IM.+MMZ+~:,DMM.MND?:~=.                                     
+*                                    ....$INNNNNNM~+$D$OONMN~ZN8ZN8I~7$7~...=.?OD8O$$$$~,..,..,~,O78D?~~MM8N$=?:ZMN.MMD7+...                                     
+*                                     ....MDN7MDNM:.?$8D~M87MDOD8MN8NODN8M7.MM8D$M7DO7D?NDMMDZZ8DIZ==8$,NMO$8ZOO8M8.MMM.:. .                                     
+*                                       ..Z8M8MMMNM.~ODMOD7NMN8I$~?:$~+?$=7M$~====M===~?8=~++~=?:~:=:NDZ:=NO8N$~ZM=:DNM~.                                        
+*                                    .   .=NNMN~D8D+ODZ8M,$$NNNMN+I=?~+7+~~?~~===~M:==:~?=:=+~~==:I:~$DD=+7D.:,O8N,~ZNM~. .                                      
+*                                    ..  .,M$M,O=M8M.=$7OZNMDNDDMZZMM:~ND:=$=====:N~===:=~:=~~+MMMMMMMO$$8ZZM:,MD,~~+N$:..                                       
+*                                       ..,MZD$Z~MDN=.$8ZZZON7ZNNZDNMMMMMMMM??~~:+M:,::=MNNMMMMMMMNMD8,,Z8I$M~=NO,~~:M.:..                                       
+*                                       ..,MM=M.:+8.8.=8$NMMD8NMMOMMMMMMMMMMMMMMMNMMMMMMMMMMMNDD78MM.OI,,.NN~+~M.~~~:I+~.                                        
+*                                       ...NM7MDMMMMI.:$N8MM8MZID+$D8$8MMNMMM$$O888NMMMMMMMM~?7Z+:7MO887~,+$O=+,:::ZMM$=...                                      
+*                                       ...MMMONDMMND::O8NNMDMO$N=?7$$?NMNMMMMMNMMMMMNNN8M8N:II:::O8ZMND,=:?,N.~::.NMDI~...                                      
+*                                       .. 8MM~MOMMNOM$NMMDDM7N$M==?Z:=~=:IZDMMMMNDMM$$.$,::::I~:Z8O7:.7N~++::~~:,M$$:=....                                      
+*                                          IMN?+M,MM8DNZ88OOM7ND8N=7O~+==+==~=~,,~:::==:7~~=~~Z~8O$,O..7.7=O.:~~,ZM~.++....                                      
+*                                        ..,MNN?:M=MDMN~?NOOMZMND8OND?D~++7+=$~=~$=~Z?=:NI=:D?==ZZ8~.=~+~,O+.:~~.MOI+7,. ..                                      
+*                                       . ..NMO8+IM8MMMMI?DMNMMD8O$O8NOO~?O=+$:+=Z+~ON+?NIOIO~~,..,78OO.::8.~,=::7$:+M,.. .                                      
+*                                           :MMZ7I=MIMNMM?ONOZNNDDO$I?~,,=+78OZ+ZZOZIOI?+?:,.,,:~:8MI7MONI8::MM.:+,I,:..  .                                      
+*                                          ..$MNO77ZNNMMO?O7MDD8DDDZI~~=?,?$IOZ8ODII8NDO$$N:.,,,,ZMM+DMMNI==:DMO:~~,,I,                                          
+*                                           ..MMNZ7ZNOMMMNZ8$MM8DMN8MO:~=,MNO8DNNMNNNNMOIN~+....:MMM~8M8Z+~,~,MM.=,,,..                                          
+*                                           ...MMMZOOMDMM7NOD$MNOMNMMM?:=:=.MDNDNNNN8ZDMMO=,.,.7MMMN+8$N===NZ~==,+~.                                             
+*                                           ....NMMODDNNN8MM=DMN8M8MMD8,,,~:INND8DMNMMDM$.7.,.~M8NMMI$N?ZO:MNI$=.I .                                             
+*                                           .... .MNNOONDNMOMMDNMOMMDMM8.,.+.??+=++??=++=:=,..MZDMMZ.8I:.~+++.,$,...                                             
+*                                               ...MMMMMNNMM.?=DNMMNDMZD.,.~+=?+?+=+==+:O~~..IN$8M8D,=77.~I+7=Z.....                                             
+*                                              .. ..,NMMMMM8$,:DIMMNNMMN,,,,+~+?III??+ZO,=.,.O7+OND:?~~.=+=~=+.... .                                             
+*                                                  .  :NNMNNM:D8NMMMMMMND.,.~?:III777I8~?,,..8I$IMM~?~:~Z..,...... .                                             
+*                                                  .....7$MMNMM:MNMMMNNM.,..~?=+???II?==:=:,.+8I$7$8=,=,..,...    ..                                             
+*                                                      ..,ODNMN:MMNMMMM:,,..~~==+==++=~+~=:...I8O888I~:.~....                                                    
+*                                                        ...MMMIMNNMNM~:... NMMN8DDNMMNMM$,...,,:+~.~,,=.....                                                    
+*                                                      .. ...~M7DNMMO?+,$.?Z$$$$$$$NMND$$ZZ...+$$+:,:.  .                                                        
+*                                                         .....=ZNNOZZ+M=OZOOZZ8NMMNMMMD7?MN~$N8DO?:...                                                          
+*                                                         ........?NOODMN$7I$$$$$$OD8I7?$OD8D8DZ+.......                                                         
+*                                                                .  .~II$D$$88DZOZZZOO8OOZ$=:...                                                                 
+*                                                                  .. .................     .  .\0          
+
+
                                         ;CONSTANTS
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -22,6 +123,13 @@ MAX_ADDR					EQU	$000FFFFF
     ORG    $1000
 START:
     MEMORY READ  $006000,$0060EF
+    LEA             TERMINATOR_SOUND,A1
+    MOVE.B          #71,D0
+    MOVE.B          #1,D1
+    TRAP            #15
+    LEA             TERMINATED_SOUND,A1
+    MOVE.B          #3,D1
+    TRAP            #15
     
 
                                 ;HOW TO USE ASCII TABLE TO PRINT
@@ -51,7 +159,18 @@ DISPLAY_WELCOME_MSG
     LEA             WELCOME_MSG,A1
     MOVE.B          #13,D0
     TRAP            #15
-GET_START_ADDRESS
+GET_START_ADDRESS   
+    MOVE.B          #76,D0
+    MOVE.L          #3,D2
+    TRAP            #15
+    
+    MOVE.B          #76,D0
+    MOVE.B          #1,D1
+    MOVE.L          #1,D2
+    TRAP            #15
+
+
+ 
     LEA				ASK_FOR_STARTING_ADDRESS_MSG,A1
 	MOVE.B			#13,D0
 	TRAP			#15
@@ -1394,7 +1513,6 @@ PRINT_CLR
     JSR     PRINT_MODE_REG
     JSR     PRINT_NEW_LINE
     JMP     MOVENEXT
-    
 PRINT_ASD
     JSR     PRINT_CURRENT_ADDR
     CMPI.B  #$0,DIRECTION
@@ -1420,7 +1538,6 @@ CONTINUE_PRINT_ASD
     MOVE.B  SOURCE_REG,D4
     JSR     PRINT_MODE_REG
     BRA     CONTINUE_PRINT_ASD_
-    
 PRINT_ASD_IMMEDIATE
     JSR     PRINT_HASHTAG
     JSR     PRINT_DOLLAR
@@ -1433,7 +1550,6 @@ PRINT_ASD_8
     MOVE.B  #$8,D3
     JSR     BYPASS
     BRA     CONTINUE_PRINT_ASD_
-
 CONTINUE_PRINT_ASD_
     JSR     PRINT_COMMA    
     
@@ -2480,12 +2596,22 @@ TASK14
     TRAP    #15
     RTS
 TERMINATE
+    MOVE.L  #3,D2
+    MOVE.B  #76,D0
+    TRAP    #15
+
     LEA     PROMPT_RESTART_OR_TERMINATE,A1
     JSR     TASK13
     MOVE.B  #5,D0
     TRAP    #15
     CMPI.B  #$D,D1
     BEQ     RESTART_DISASSEMBLER
+    
+    MOVE.B  #76,D0
+    MOVE.B  #3,D1
+    MOVE.L  #0,D2
+    TRAP    #15
+    
     MOVE.B  #9,D0
     TRAP    #15
 RESTART_DISASSEMBLER
@@ -2519,6 +2645,9 @@ ASK_FOR_ENDING_ADDRESS_MSG		DC.B    'Please specify the ending address',0
 INVALID_USER_INPUT_MSG			DC.B	'Please enter a valid address ($00002000 - $000FFFFF)',0
 PRESS_KEY_CONTINUE              DC.B    'Please press the ENTER key to continue...',0
 PROMPT_RESTART_OR_TERMINATE     DC.B    'Done! Press ENTER to try a new memory location, or any other key to terminate...',0 
+TERMINATOR_SOUND                DC.B    'TerminatorSound.WAV',0
+TERMINATED_SOUND                DC.B    't3_terminated.WAV',0
+
 
 
 *----------------------------------------------------------
@@ -2746,6 +2875,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
