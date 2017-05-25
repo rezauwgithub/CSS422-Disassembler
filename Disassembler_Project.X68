@@ -564,6 +564,7 @@ CLR_
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
     
+    JSR     ERROR_CHECK_SIZE2    
     BRA     PRINT_CLR
 
 JSR_
@@ -713,6 +714,7 @@ ADD_ADDA_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
+     
     BRA     PRINT_ADD
 TO_DATA_ADD
     JSR     CLEAR_REGS
@@ -825,6 +827,8 @@ SUB_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
+    
+    JSR     ERROR_CHECK_SIZE2 
     BRA     PRINT_SUB
 TO_DATA_SUB
     JSR     CLEAR_REGS
@@ -1101,6 +1105,21 @@ BCC_
     
     BRA     PRINT_Bcc
     
+;///////////////////////////////////////////////////////////////////////////////////////////////////
+***************************************************************************************************
+       **** Error Checks ****
+* Dark purple
+ERROR_CHECK_SIZE1
+    CMP     #$00,SIZE
+    BEQ     SHOW_ERROR
+    RTS
+
+* Light purple
+ERROR_CHECK_SIZE2
+    CMP     #$03,SIZE
+    BEQ     SHOW_ERROR
+    RTS
+
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
@@ -2559,16 +2578,20 @@ PRINT_ONE_SPACE
 ****** ERRORS ********
 **********************
 
-  
-SHOW_ERROR
-SHOW_ERROR
-
 * **** Show Error ****      // TO DO: Come up with more descriptive errors
 * --------------------
 SHOW_ERROR
     LEA     ERROR,A1
     JSR     TASK14     
-    BRA     TESTLOOP       
+    BRA     TESTLOOP  
+
+* **** Size Error ****      // TO DO: Come up with more descriptive errors
+* --------------------
+SIZE_ERROR
+    LEA     SIZE_ERROR,A1
+    JSR     TASK14 
+    RTS    
+    *BRA     TESTLOOP        
 
 * --------------------------------------
 * **** Invalid User Input Detected ****
@@ -2759,8 +2782,8 @@ HEX_D      DC.B    'D',0
 HEX_E      DC.B    'E',0
 HEX_F      DC.B    'F',0
 *ERROR
-ERROR       DC.B    'Something went wrong. Derp',0
-
+ERROR       DC.B    'ERROR: Something went wrong. Derp.',0
+SIZE_ERROR  DC.B    'ERROR: Invalid size bits -> ',0   
 
 *OUTPUT_VARIABLES      
 SIZE                    DS.B    1
@@ -2875,6 +2898,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 

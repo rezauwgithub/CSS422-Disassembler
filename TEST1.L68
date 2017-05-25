@@ -1,0 +1,132 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.15.04
+Created On: 5/12/2017 1:43:51 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      :
+00000000                             3  * Written by :
+00000000                             4  * Date       :
+00000000                             5  * Description:
+00000000                             6  *-----------------------------------------------------------
+00008000                             7      ORG    $8000
+00008000                             8  
+00008000                             9  * Put program code here
+00008000  1200                      10      MOVE.B  D0,D1
+00008002  1400                      11      MOVE.B  D0,D2
+00008004  1600                      12      MOVE.B  D0,D3
+00008006  1800                      13      MOVE.B  D0,D4
+00008008  1A00                      14      MOVE.B  D0,D5
+0000800A  1C00                      15      MOVE.B  D0,D6
+0000800C  1E00                      16      MOVE.B  D0,D7
+0000800E                            17      
+0000800E                            18      
+0000800E  1001                      19      MOVE.B  D1,D0
+00008010  1002                      20      MOVE.B  D2,D0
+00008012  1003                      21      MOVE.B  D3,D0
+00008014  1004                      22      MOVE.B  D4,D0
+00008016  1005                      23      MOVE.B  D5,D0
+00008018  1006                      24      MOVE.B  D6,D0
+0000801A  1007                      25      MOVE.B  D7,D0
+0000801C                            26      
+0000801C  307C 7FFF                 27      MOVEA.W #$7FFF,A0
+00008020  2C7C 00007FFF             28      MOVEA.L #$00007FFF,A6
+00008026  3239 0000FFFF             29      MOVE.W  $FFFF,D1
+0000802C                            30      
+0000802C  D400                      31      ADD.B   D0,D2
+0000802E  DAFC 4444                 32      ADDA.W  #$4444,A5
+00008032                            33      
+00008032  0683 1234ABCD             34      ADDI.L  #$1234ABCD,D3
+00008038  7EAB                      35      MOVEQ   #$AB,D7
+0000803A  5C43                      36      ADDQ.W  #$6,D3
+0000803C                            37      
+0000803C  9778 5000                 38      SUB.W   D3,$5000
+00008040  C1FC FFFF                 39      MULS    #$0000FFFF,D0
+00008044  C87C 44FF                 40      AND.W     #$44FF,D4
+00008048                            41      
+00008048  80BC ABCD1234             42      OR.L    #$ABCD1234,D0
+0000804E  88F9 FFFF5000             43      DIVU    $FFFF5000,D4
+00008054  4DF9 0000FFFF             44      LEA     $0000FFFF,A6
+0000805A  BABC 00004000             45      CMP.L   #$00004000,D5
+00008060                            46      
+00008060  1200                      47      MOVE.B  D0,D1
+00008062  1400                      48      MOVE.B  D0,D2
+00008064  1600                      49      MOVE.B  D0,D3
+00008066  1800                      50      MOVE.B  D0,D4
+00008068  1A00                      51      MOVE.B  D0,D5
+0000806A  1C00                      52      MOVE.B  D0,D6
+0000806C  1E00                      53      MOVE.B  D0,D7
+0000806E                            54      
+0000806E                            55      
+0000806E  1001                      56      MOVE.B  D1,D0
+00008070  1002                      57      MOVE.B  D2,D0
+00008072  1003                      58      MOVE.B  D3,D0
+00008074  1004                      59      MOVE.B  D4,D0
+00008076  1005                      60      MOVE.B  D5,D0
+00008078  1006                      61      MOVE.B  D6,D0
+0000807A  1007                      62      MOVE.B  D7,D0
+0000807C                            63      
+0000807C  307C 7FFF                 64      MOVEA.W #$7FFF,A0
+00008080  2C7C 00007FFF             65      MOVEA.L #$00007FFF,A6
+00008086  3239 0000FFFF             66      MOVE.W  $FFFF,D1
+0000808C                            67      
+0000808C  D400                      68      ADD.B   D0,D2
+0000808E  DAFC 4444                 69      ADDA.W  #$4444,A5
+00008092                            70      
+00008092  0683 1234ABCD             71      ADDI.L  #$1234ABCD,D3
+00008098  7EAB                      72      MOVEQ   #$AB,D7
+0000809A  5C43                      73      ADDQ.W  #$6,D3
+0000809C                            74      
+0000809C  9778 5000                 75      SUB.W   D3,$5000
+000080A0  C1FC FFFF                 76      MULS    #$0000FFFF,D0
+000080A4  C87C 44FF                 77      AND.W     #$44FF,D4
+000080A8                            78      
+000080A8  80BC ABCD1234             79      OR.L    #$ABCD1234,D0
+000080AE  88F9 FFFF5000             80      DIVU    $FFFF5000,D4
+000080B4  4DF9 0000FFFF             81      LEA     $0000FFFF,A6
+000080BA  BABC 00004000             82      CMP.L   #$00004000,D5
+000080C0                            83      
+000080C0  4EB9 000080CA             84      JSR     JSR_TEST
+000080C6                            85      *CLR.B   D2
+000080C6                            86      *CLR.W   D3
+000080C6                            87      *CLR.L   D4
+000080C6  4E71                      88      NOP
+000080C8  4E75                      89      RTS
+000080CA                            90      
+000080CA                            91      
+000080CA                            92  JSR_TEST    ; Added by Reza
+000080CA  4E75                      93      RTS
+000080CC                            94      
+000080CC                            95      
+000080CC                            96  
+000080CC                            97  * Put variables and constants here
+000080CC                            98  
+000080CC                            99  
+000080CC                           100  
+000080CC                           101  
+000080CC                           102  
+000080CC                           103  
+000080CC                           104  
+000080CC                           105  
+000080CC                           106  
+000080CC                           107  
+000080CC                           108  
+000080CC                           109  
+000080CC                           110  
+000080CC                           111  
+000080CC                           112  
+000080CC                           113  
+000080CC                           114  
+000080CC                           115  
+000080CC                           116  
+000080CC                           117  
+000080CC                           118  
+Line 119 WARNING: END directive missing, starting address not set
+
+No errors detected
+1 warning generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+JSR_TEST            80CA
