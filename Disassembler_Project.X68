@@ -2588,7 +2588,7 @@ SHOW_ERROR
 * **** Size Error ****      // TO DO: Come up with more descriptive errors
 * --------------------
 SIZE_ERROR
-    LEA     SIZE_ERROR,A1
+    LEA     SIZE_ERROR_MSG,A1
     JSR     TASK14 
     RTS    
     *BRA     TESTLOOP        
@@ -2783,7 +2783,7 @@ HEX_E      DC.B    'E',0
 HEX_F      DC.B    'F',0
 *ERROR
 ERROR       DC.B    'ERROR: Something went wrong. Derp.',0
-SIZE_ERROR  DC.B    'ERROR: Invalid size bits -> ',0   
+SIZE_ERROR_MSG  DC.B    'ERROR: Invalid size bits -> ',0   
 
 *OUTPUT_VARIABLES      
 SIZE                    DS.B    1
@@ -2898,6 +2898,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
