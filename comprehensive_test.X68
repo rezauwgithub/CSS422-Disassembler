@@ -5,6 +5,7 @@
 * Description: Comprehensive test input for the disassembler.
 *------------------------------------------------------------
     ORG    $8000
+  
     MOVE.B  D0,D1
     MOVE.B  (A3),(A4)+
     MOVE.B  (A4)+,-(A5)
@@ -215,6 +216,10 @@
     ADDQ.L  #$7,$8000             
     ADDQ.L  #$8,$A000       
 
+    ADDX.B  -(A0),-(A1)
+    ADDX.W  -(A0),-(A1)
+    ADDX.L  -(A0),-(A1)
+
     SUB.B  D0,D0                 
     SUB.B  (A1),D2                
     SUB.B  (A2)+,D3              
@@ -265,7 +270,18 @@
     SUB.L  D3,(A4)+              
     SUB.L  D4,-(A5)              
     SUB.L  D5,$6000              
-    SUB.L  D6,$8000    
+    SUB.L  D6,$8000
+    
+    SUBA.W  (A0),A1
+    SUBA.L  (A0),A1
+    
+    SUBI.B  #$01,(A0)
+    SUBI.W  #$0101,(A0)
+    SUBI.L  #$01010000,(A0)
+    
+    SUBQ.B  #3,(A0)
+    SUBQ.W  #3,(A0)    
+    SUBQ.L  #3,(A0)    
 
     MULS  D0,D0                                 
     MULS  (A1),D2               
@@ -274,7 +290,10 @@
     MULS  $4000,D5              
     MULS  $A000,D6              
     MULS  #$70,D7                
-    MULS  #$7000,D0          
+    MULS  #$7000,D0
+
+    MULU.W  #$0080,D4
+    MULU.W  #$0080,D4        
 
     DIVU  D0,D0                                 
     DIVU  (A1),D2               
@@ -283,7 +302,7 @@
     DIVU  $4000,D5              
     DIVU  $A000,D6              
     DIVU  #$70,D7                
-    DIVU  #$7000,D0   
+    DIVU  #$7000,D0  
                            
     LEA (A1),A2                            
     LEA $4000,A5               
@@ -361,6 +380,10 @@
     AND.L  D5,$6000              
     AND.L  D6,$8000
     
+    ANDI.B  #$04,(A3)  
+    ANDI.W  #$4444,(A3) 
+    ANDI.L  #$F0F0F0F0,(A3) 
+    
     OR.B  D0,D0                 
     OR.B  (A1),D2                
     OR.B  (A2)+,D3              
@@ -409,6 +432,10 @@
     OR.L  D5,$6000              
     OR.L  D6,$8000
     
+    ORI.B   #$04,(A3)
+    ORI.W   #$AAAA,(A3)
+    ORI.L   #$0F0F0F0F,(A3)
+    
     CMP.B  D0,D0                 
     CMP.B  (A1),D2                
     CMP.B  (A2)+,D3              
@@ -437,6 +464,10 @@
     CMP.L  #$70,D7                
     CMP.L  #$7000,D0              
     CMP.L  #$70000000,D1              
+    
+    CMPI.B  #$01,D1
+    CMPI.W  #$01,D1
+    CMPI.L  #$01,D1        
     
     ASL     (A0)
     ASR     (A1)+
@@ -468,6 +499,13 @@
     ROL.W    #$8,D1
     ROL.L    D7,D1
     
+    ROXL.B  D2,D3
+    ROXR.B  D2,D3
+    ROXL.W  D2,D3
+    ROXR.W  D2,D3
+    ROXL.L  D2,D3
+    ROXR.L  D2,D3
+    
     BCC     FARGONE
     BGT     FARGONE
     BLE     FARGONE
@@ -475,25 +513,11 @@
     JSR     FARGONE
     JSR     $A000
     JSR     $4000
+    
+    JMP     FARGONE
+    
 FARGONE
     RTS
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 *~Font name~Courier New~
 *~Font size~10~

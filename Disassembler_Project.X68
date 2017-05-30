@@ -732,6 +732,7 @@ TO_DATA_ADD
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
+    
     BRA     PRINT_ADD
 
 ADDA_
@@ -775,7 +776,8 @@ ADDI_
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
     JSR     BITS_14_16
-    MOVE.B  D2,DESTINATION_REG
+    MOVE.B  D2,DESTINATION_REG    
+    
     BRA     PRINT_ADDI
 ADDQ_
     MOVE.B  #$2,SIZETYPE
@@ -2898,6 +2900,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
