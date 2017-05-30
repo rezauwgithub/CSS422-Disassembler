@@ -93,7 +93,7 @@
     MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,-(A5)           
     MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,$6000           
     MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,$8000           
-    MOVEM.W  A7-A0/D7-D0,-(SP)                       
+    MOVEM.W  A7-A0/D7-D0,-(SP)                    
     
     ADD.B  D0,D0                 
     ADD.B  (A1),D2                
@@ -477,6 +477,7 @@
     JSR     $4000
 FARGONE
     RTS
+
 
 
 
