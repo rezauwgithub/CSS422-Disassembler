@@ -529,19 +529,21 @@ NOP_MOVEM_LEA_CLR_JSR_RTS_
     JSR     CLEAR_REGS  * Check if CLR or JSR
     MOVE.W  (A2),D2
     JSR     BITS_5_7
-    CMPI    #$1,D2
+    CMPI.B  #$1,D2
     BEQ     CLR_
-    CMPI    #$7,D2
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_7_10
+    CMPI.B  #$0A,D2
     BEQ     JSR_
     
     JSR     CLEAR_REGS  * Check if MOVEM
     MOVE.W  (A2),D2
-    JSR     BITS_5_7
-    CMPI.B  #$4,D2
+    JSR     BITS_7_9
+    CMPI.B  #$1,D2
     BEQ     MOVEM_
-    CMPI.B  #$6,D2
-    BEQ     MOVEM_    
-    
+
     BRA     PRINT_DATA
     
 CLR_
@@ -755,6 +757,8 @@ ADD_ADDA_
     CMPI.B  #$01,INVALID_COUNTER
     BEQ     PRINT_DATA
     
+    JSR     CHECK_DECREMENT
+    
     BRA     PRINT_ADD
 TO_DATA_ADD
     JSR     CLEAR_REGS
@@ -776,6 +780,8 @@ TO_DATA_ADD
     JSR     INVALID_ADDRESSING
     CMPI.B  #$01,INVALID_COUNTER
     BEQ     PRINT_DATA
+    
+    JSR     CHECK_DECREMENT
     
     BRA     PRINT_ADD
 
@@ -809,6 +815,13 @@ ADDA_
     BRA     PRINT_ADDA
 ADDI_
     MOVE.B  #$2,SIZETYPE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_5_7
+    CMPI.B  #$3,D2
+    BNE     PRINT_DATA
+    
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
     JSR     BITS_9_10
@@ -834,6 +847,13 @@ ADDI_
     BRA     PRINT_ADDI
 ADDQ_
     MOVE.B  #$2,SIZETYPE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_8
+    CMPI.B  #$0,D2
+    BNE     PRINT_DATA
+    
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
     JSR     BITS_9_10
@@ -860,6 +880,13 @@ ADDQ_
     BRA     PRINT_ADDQ
 SUB_
     MOVE.B  #$2,SIZETYPE
+    
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_10
+    CMPI.B  #$3,D2
+    BEQ     PRINT_DATA
+    
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
     JSR     BITS_9_10
@@ -892,6 +919,8 @@ SUB_
     CMPI.B  #$01,INVALID_COUNTER
     BEQ     PRINT_DATA
     
+    JSR     CHECK_DECREMENT
+    
     BRA     PRINT_SUB
 TO_DATA_SUB
     JSR     CLEAR_REGS
@@ -914,17 +943,21 @@ TO_DATA_SUB
     CMPI.B  #$01,INVALID_COUNTER
     BEQ     PRINT_DATA
     
+    JSR     CHECK_DECREMENT
+    
     BRA     PRINT_SUB
 MULS_AND_
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
-    JSR     BITS_9_10
-    CMPI    #$3,D2
+    JSR     BITS_8_10
+    CMPI    #$7,D2
     BEQ     MULS_
     
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_10
     MOVE.B  #$2,SIZETYPE
     MOVE.B  D2,SIZE
-    
     
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
@@ -953,6 +986,8 @@ MULS_AND_
     CMPI.B  #$01,INVALID_COUNTER
     BEQ     PRINT_DATA
     
+    JSR     CHECK_DECREMENT
+    
     BRA     PRINT_AND
     
 TO_DATA_AND
@@ -975,6 +1010,8 @@ TO_DATA_AND
     JSR     INVALID_ADDRESSING
     CMPI.B  #$01,INVALID_COUNTER
     BEQ     PRINT_DATA
+    
+    JSR     CHECK_DECREMENT
     
     BRA     PRINT_AND
 MULS_
@@ -1000,14 +1037,19 @@ MULS_
     CMPI.B  #$01,INVALID_COUNTER
     BEQ     PRINT_DATA
     
+    JSR     CHECK_DECREMENT
+    
     BRA     PRINT_MULS
 OR_DIVU_
     JSR     CLEAR_REGS
     MOVE.W  (A2),D2
-    JSR     BITS_9_10
+    JSR     BITS_8_10
     CMPI    #$3,D2
     BEQ     DIVU_
     
+    JSR     CLEAR_REGS
+    MOVE.W  (A2),D2
+    JSR     BITS_9_10
     MOVE.B  #$2,SIZETYPE
     MOVE.B  D2,SIZE
     
@@ -1038,6 +1080,8 @@ OR_DIVU_
     CMPI.B  #$01,INVALID_COUNTER
     BEQ     PRINT_DATA
     
+    JSR     CHECK_DECREMENT
+    
     BRA     PRINT_OR
     
 TO_DATA_OR
@@ -1060,6 +1104,8 @@ TO_DATA_OR
     JSR     INVALID_ADDRESSING
     CMPI.B  #$01,INVALID_COUNTER
     BEQ     PRINT_DATA
+    
+    JSR     CHECK_DECREMENT
     
     BRA     PRINT_OR 
 DIVU_
@@ -1084,6 +1130,8 @@ DIVU_
     JSR     INVALID_ADDRESSING
     CMPI.B  #$01,INVALID_COUNTER
     BEQ     PRINT_DATA
+    
+    JSR     CHECK_DECREMENT
     
     BRA     PRINT_DIVU
 
@@ -1140,7 +1188,9 @@ CONTINUE_LSd_ASd_ROd_
     CMPI.B  #$1,D2
     BEQ     PRINT_LSD
     CMPI.B  #$3,D2
-    BEQ     PRINT_ROD   
+    BEQ     PRINT_ROD
+    
+    BRA     PRINT_DATA   
 LSd_ASd_ROd_1
     MOVE.B  #$4,SIZETYPE
     JSR     CLEAR_REGS * get direction
@@ -1222,6 +1272,16 @@ BCC_
     
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
+
+
+CHECK_DECREMENT
+    CMPI.B  #$4,SOURCE_MODE
+    BEQ     CHECK_DECREMENT_CONTINUE
+    RTS
+CHECK_DECREMENT_CONTINUE
+    CMPI.B  #$4,DESTINATION_MODE
+    BEQ     PRINT_DATA
+    RTS
 
 RESET_ADDRESSING
     MOVE.B  #$00,SOURCE_MODE
@@ -2074,43 +2134,58 @@ BITS_6
     LSR.W   #$7,D2
     RTS
 BITS_5_7
-    LSL.W #$4,D2
-    LSR.W #$8,D2
-    LSR.W #$5,D2
+    LSL.W   #$4,D2
+    LSR.W   #$8,D2
+    LSR.W   #$5,D2
     RTS
 BITS_5_8
     LSL.W	#$4,D2
     LSR.W	#$8,D2
     LSR.W	#$4,D2
     RTS
+BITS_5_9
+    LSL.W   #$4,D2
+    LSR.W   #$8,D2 
+    LSR.W   #$3,D2
+    RTS
 BITS_1_8
-    LSR.W #$8,D2
+    LSR.W   #$8,D2
     RTS
 BITS_1_8_LONG
-    LSR.L #$8,D2
-    LSR.L #$8,D2
-    LSR.L #$8,D2
+    LSR.L   #$8,D2
+    LSR.L   #$8,D2
+    LSR.L   #$8,D2
     RTS
 BITS_8
-    LSL.W #$7,D2
-    LSR.W #$8,D2
-    LSR.W #$7,D2
+    LSL.W   #$7,D2
+    LSR.W   #$8,D2
+    LSR.W   #$7,D2
     RTS
 BITS_10
-    LSL.W #$8,D2
-    LSL.W #$1,D2
-    LSR.W #$8,D2
-    LSR.W #$7,D2
+    LSL.W   #$8,D2
+    LSL.W   #$1,D2
+    LSR.W   #$8,D2
+    LSR.W   #$7,D2
+    RTS
+BITS_7_9
+    LSL.W	#$6,D2
+    LSR.W	#$8,D2
+    LSR.W	#$5,D2
+    RTS
+BITS_7_10
+    LSL.W	#$6,D2
+    LSR.W	#$8,D2
+    LSR.W	#$4,D2
     RTS
 BITS_8_10
-    LSL.W #$7,D2
-    LSR.W #$8,D2
-    LSR.W #$5,D2
+    LSL.W   #$7,D2
+    LSR.W   #$8,D2
+    LSR.W   #$5,D2
     RTS
 BITS_9_10
-    LSL.W #$8,D2
-    LSR.W #$8,D2
-    LSR.W #$6,D2
+    LSL.W   #$8,D2
+    LSR.W   #$8,D2
+    LSR.W   #$6,D2
     RTS
 BITS_11
     LSL.W	#$8,D2
@@ -2125,14 +2200,14 @@ BITS_12_13
     LSR.W	#$6,D2
     RTS
 BITS_11_13
-    LSL.W #$8,D2
-    LSL.W #$2,D2
-    LSR.W #$8,D2
-    LSR.W #$5,D2
+    LSL.W   #$8,D2
+    LSL.W   #$2,D2
+    LSR.W   #$8,D2
+    LSR.W   #$5,D2
     RTS
 BITS_9_16
-    LSL.W #$8,D2
-    LSR.W #$8,D2
+    LSL.W   #$8,D2
+    LSR.W   #$8,D2
     RTS
 BITS_9_16_LONG
     LSL.L   #$8,D2
@@ -2141,10 +2216,10 @@ BITS_9_16_LONG
     LSR.L   #$8,D2
     RTS
 BITS_14_16
-    LSL.W #$8,D2
-    LSL.W #$5,D2
-    LSR.W #$8,D2
-    LSR.W #$5,D2
+    LSL.W   #$8,D2
+    LSL.W   #$5,D2
+    LSR.W   #$8,D2
+    LSR.W   #$5,D2
     RTS
 CLEAR_REGS
     CLR.L   D2
