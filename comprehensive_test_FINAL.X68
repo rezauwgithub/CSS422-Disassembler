@@ -360,6 +360,17 @@
     MOVEQ  #$7F,D6
     MOVEQ  #79,D7 
                  
+    MOVEM.W  $7FFF,D1/D2/D3/D4/A0/A1/A2/A3          
+    MOVEM.W  $FFFF,D0/D2/D3/D1/A4/A5/A6/A0
+    MOVEM.W  A0/A1/A2/A3/D1/D2/D3/D4,$7FFF          
+    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,$FFFF           
+    MOVEM.W  (SP)+,D0-D7/A0-A7   
+    MOVEM.W  A7-A0/D7-D0,-(SP) 
+    MOVEM.W  (A1),D1/D2/D3/D4/A0/A1/A2/A3             
+    MOVEM.W  (A2)+,D0/D2/D3/D1/A4/A5/A6/A0           
+    MOVEM.W  A0/A1/A2/A3/D1/D2/D3/D4,(A3)           
+    MOVEM.W   A0/A2/A4/A6/D1/D3/D5/D7,-(A4)           
+         
     MOVEM.L  $7FFF,D1/D2/D3/D4/A0/A1/A2/A3          
     MOVEM.L  $FFFF,D0/D2/D3/D1/A4/A5/A6/A0
     MOVEM.L  A0/A1/A2/A3/D1/D2/D3/D4,$7FFF          
@@ -369,167 +380,186 @@
     MOVEM.L  (A1),D1/D2/D3/D4/A0/A1/A2/A3             
     MOVEM.L  (A2)+,D0/D2/D3/D1/A4/A5/A6/A0           
     MOVEM.L  A0/A1/A2/A3/D1/D2/D3/D4,(A3)           
-    MOVEM.L   A0/A2/A4/A6/D1/D3/D5/D7,-(A4)           
-         
-                       
-    
-    MOVEM.W  (A3),D0/D2/D4/D6/A1/A3/A5/A7            
-    MOVEM.W  (A4)+,D0/D2/D4/D6/A1/A3/A5/A7          
-    MOVEM.W  $6000,D0/D2/D4/D6/A1/A3/A5/A7           
-    MOVEM.W  $8000,D0/D2/D4/D6/A1/A3/A5/A7           
-    MOVEM.W  (SP)+,D0-D7/A0-A7                      
-    
-    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,(A3)            
-    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,-(A5)           
-    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,$6000           
-    MOVEM.W  A0/A2/A4/A6/D1/D3/D5/D7,$8000           
-    MOVEM.W  A7-A0/D7-D0,-(SP)  
+    MOVEM.L   A0/A2/A4/A6/D1/D3/D5/D7,-(A4)                          
                      
 ;//////////////////////////////////////////////////////////////////////////////////////
-* MULS        
+* MULS
+    MULS  $0001,D1              
+    MULS  $1000,D2              
+    MULS  #$7F,D3                
+    MULS  #$7FFF,D4
+    MULS  #79,D5                
+    MULS  #7999,D6        
     MULS  D0,D0                                 
-    MULS  (A1),D2               
-    MULS  (A2)+,D3               
-    MULS  -(A3),D4              
-    MULS  $4000,D5              
-    MULS  $A000,D6              
-    MULS  #$70,D7                
-    MULS  #$7000,D0   
+    MULS  (A0),D1               
+    MULS  (A1)+,D2               
+    MULS  -(A2),D3               
      
 ;//////////////////////////////////////////////////////////////////////////////////////
-* OR  
-    OR.B  D0,D0                 
-    OR.B  (A1),D2                
-    OR.B  (A2)+,D3              
-    OR.B  -(A3),D4               
-    OR.B  $4000,D5              
-    OR.B  $A000,D6               
-    OR.B  #$70,D7               
-    
-    OR.B  D0,D1                 
-    OR.B  D2,(A3)                
-    OR.B  D3,(A4)+               
-    OR.B  D4,-(A5)               
-    OR.B  D5,$6000              
-    OR.B  D6,$8000              
-    
-    OR.W  D0,D0                                
-    OR.W  (A1),D2                
-    OR.W  (A2)+,D3               
-    OR.W  -(A3),D4               
-    OR.W  $4000,D5               
-    OR.W  $A000,D6               
-    OR.W  #$70,D7               
-    OR.W  #$7000,D0              
-    
-    OR.W  D0,D1                              
-    OR.W  D2,(A3)               
-    OR.W  D3,(A4)+               
-    OR.W  D4,-(A5)              
-    OR.W  D5,$6000              
-    OR.W  D6,$8000              
-    
-    OR.L  D0,D0                                  
-    OR.L  (A1),D2               
-    OR.L  (A2)+,D3               
-    OR.L  -(A3),D4              
-    OR.L  $4000,D5              
-    OR.L  $A000,D6              
-    OR.L  #$70,D7                
-    OR.L  #$7000,D0              
-    OR.L  #$70000000,D1         
-    
-    OR.L  D0,D1                             
-    OR.L  D2,(A3)               
-    OR.L  D3,(A4)+              
-    OR.L  D4,-(A5)              
-    OR.L  D5,$6000              
-    OR.L  D6,$8000
+* OR
+    OR.B  $7FFF,D1
+    OR.B  D1,$1000              
+    OR.B  $FFFF,D2
+    OR.B  D2,$2000               
+    OR.B  #$7F,D3 
+    OR.B  #79,D4  
+    OR.B  D0,D0
+    OR.B  D0,D1                  
+    OR.B  (A0),D1
+    OR.B  D2,(A3)                 
+    OR.B  (A1)+,D2 
+    OR.B  D3,(A4)+             
+    OR.B  -(A2),D3 
+    OR.B  D4,-(A5)              
+              
+    OR.W  $7FFF,D1
+    OR.W  D1,$1000              
+    OR.W  $FFFF,D2
+    OR.W  D2,$2000               
+    OR.W  #$7F,D3 
+    OR.W  #79,D4 
+    OR.W  #$7FFF,D3 
+    OR.W  #7999,D4  
+    OR.W  D0,D0
+    OR.W  D0,D1                  
+    OR.W  (A0),D1
+    OR.W  D2,(A3)                 
+    OR.W  (A1)+,D2 
+    OR.W  D3,(A4)+             
+    OR.W  -(A2),D3 
+    OR.W  D4,-(A5)   
+                
+    OR.L  $7FFF,D1
+    OR.L  D1,$1000              
+    OR.L  $FFFF,D2
+    OR.L  D2,$2000               
+    OR.L  #$7F,D3 
+    OR.L  #79,D4 
+    OR.L  #$7FFF,D3 
+    OR.L  #7999,D4 
+    OR.L  #$7FFFFFFF,D3 
+    OR.L  #79999999,D4 
+    OR.L  D0,D0
+    OR.L  D0,D1                  
+    OR.L  (A0),D1
+    OR.L  D2,(A3)                 
+    OR.L  (A1)+,D2 
+    OR.L  D3,(A4)+             
+    OR.L  -(A2),D3 
+    OR.L  D4,-(A5)               
     
 ;//////////////////////////////////////////////////////////////////////////////////////
-* SUB  
-    SUB.B  D0,D0                 
-    SUB.B  (A1),D2                
-    SUB.B  (A2)+,D3              
-    SUB.B  -(A3),D4               
-    SUB.B  $4000,D5              
-    SUB.B  $A000,D6                
-    SUB.B  D0,D1                 
-    SUB.B  D2,(A3)                
-    SUB.B  D3,(A4)+               
-    SUB.B  D4,-(A5)               
-    SUB.B  D5,$6000              
-    SUB.B  D6,$8000              
-    
-    SUB.W  D0,D0                 
-    SUB.W  A0,D1                 
-    SUB.W  (A1),D2                
-    SUB.W  (A2)+,D3               
-    SUB.W  -(A3),D4               
-    SUB.W  $4000,D5               
-    SUB.W  $A000,D6                    
+* SUB
+    SUB.B  $1000,D1              
+    SUB.B  $2000,D2 
+    SUB.B  D1,$7FFF              
+    SUB.B  D2,$FFFF
+    SUB.B  D0,D0
+    SUB.B  D0,D1                  
+    SUB.B  (A0),D1
+    SUB.B  D2,(A3)                 
+    SUB.B  (A4)+,D3 
+    SUB.B  D4,(A5)+             
+    SUB.B  -(A6),D5 
+    SUB.B  D6,-(A7)
+              
+    SUB.W  $1000,D1              
+    SUB.W  $2000,D2 
+    SUB.W  D1,$7FFF              
+    SUB.W  D2,$FFFF
+    SUB.W  D0,D0
     SUB.W  D0,D1                  
-    SUB.W  D2,(A3)               
-    SUB.W  D3,(A4)+               
-    SUB.W  D4,-(A5)              
-    SUB.W  D5,$6000              
-    SUB.W  D6,$8000              
+    SUB.W  (A0),D1
+    SUB.W  D2,(A3)                 
+    SUB.W  (A4)+,D3 
+    SUB.W  D4,(A5)+             
+    SUB.W  -(A6),D5 
+    SUB.W  D6,-(A7) 
     
-    SUB.L  D0,D0                  
-    SUB.L  A0,D1                 
-    SUB.L  (A1),D2               
-    SUB.L  (A2)+,D3               
-    SUB.L  -(A3),D4              
-    SUB.L  $4000,D5              
-    SUB.L  $A000,D6                
-    SUB.L  D0,D1                     
-    SUB.L  D2,(A3)               
-    SUB.L  D3,(A4)+              
-    SUB.L  D4,-(A5)              
-    SUB.L  D5,$6000              
-    SUB.L  D6,$8000    
+    SUB.L  $1000,D1              
+    SUB.L  $2000,D2 
+    SUB.L  D1,$7FFF              
+    SUB.L  D2,$FFFF
+    SUB.L  D0,D0
+    SUB.L  D0,D1                  
+    SUB.L  (A0),D1
+    SUB.L  D2,(A3)                 
+    SUB.L  (A4)+,D3 
+    SUB.L  D4,(A5)+             
+    SUB.L  -(A6),D5 
+    SUB.L  D6,-(A7)    
     
 ;//////////////////////////////////////////////////////////////////////////////////////
-* Bit Manipulation    
+* Bit Manipulation
+    ASL     $1000
+    ASL     $7FFF    
     ASL     (A0)
-    ASR     (A1)+
+    ASL     (A1)+
     ASL     -(A2)
-    ASR     $4000
-    ASL     $A000
     
     ASL.B   #$7,D0
     ASL.W   #$8,D1
-    ASL.L   D3,D2
+    ASL.L   D2,D3
     
-    LSL     (A3)
-    LSR     (A4)+
-    LSL     -(A5)
-    LSR     $4000
-    LSL     $A000
+    ASR     $1000
+    ASR     $7FFF    
+    ASR     (A0)
+    ASR     (A1)+
+    ASR     -(A2)
+    
+    ASR.B   #$7,D0
+    ASR.W   #$8,D1
+    ASR.L   D2,D3
+
+    LSL     $1000
+    LSL     $7FFF    
+    LSL     (A0)
+    LSL     (A1)+
+    LSL     -(A2)
     
     LSL.B   #$7,D0
     LSL.W   #$8,D1
-    LSL.L   D5,D1
+    LSL.L   D2,D3
     
-    ROL     (A6)
-    ROR     (A0)+
-    ROL     -(A1)
-    ROR     $4000
-    ROL     $A000
+    LSR     $1000
+    LSR     $7FFF    
+    LSR     (A0)
+    LSR     (A1)+
+    LSR     -(A2)
     
-    ROL.B    #$7,D0
-    ROL.W    #$8,D1
-    ROL.L    D7,D1
+    LSR.B   #$7,D0
+    LSR.W   #$8,D1
+    LSR.L   D2,D3 
+    
+    ROL     $1000
+    ROL     $7FFF    
+    ROL     (A0)
+    ROL     (A1)+
+    ROL     -(A2)
+    
+    ROL.B   #$7,D0
+    ROL.W   #$8,D1
+    ROL.L   D2,D3
+    
+    ROR     $1000
+    ROR     $7FFF    
+    ROR     (A0)
+    ROR     (A1)+
+    ROR     -(A2)
+    
+    ROR.B   #$7,D0
+    ROR.W   #$8,D1
+    ROR.L   D2,D3
 
 ;//////////////////////////////////////////////////////////////////////////////////////
 * Bcc and JSR     
     BCC     TEST123
-    BGT     TEST123
     BLE     TEST123
-    
+    BGT     TEST123
+
     JSR     TEST123
-    JSR     $A000
-    JSR     $4000
+    JSR     $7FFF
+    JSR     $FFFF
     
 TEST123
     RTS

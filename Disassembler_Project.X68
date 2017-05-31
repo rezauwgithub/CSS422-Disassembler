@@ -119,7 +119,7 @@ MAX_ADDR					EQU	$000FFFFF
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
-    INCLUDE comprehensive_test.X68
+    INCLUDE comprehensive_test_FINAL.X68
     ORG    $1000
 START:
     MEMORY READ  $006000,$0060EF
@@ -3114,6 +3114,7 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
 
 
 
