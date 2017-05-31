@@ -169,8 +169,6 @@ GET_START_ADDRESS
     MOVE.L          #1,D2
     TRAP            #15
 
-
- 
     LEA				ASK_FOR_STARTING_ADDRESS_MSG,A1
 	MOVE.B			#13,D0
 	TRAP			#15
@@ -374,16 +372,14 @@ CLEAR_SCREEN
 CONTINUE_TESTLOOP
     ADDI.B  #1,OUTPUT_COUNTER
     JSR ROTATEBYTE
-                
-        
+               
         
 CASE1
         ;NOP/MOVEM/LEA/CLR/JSR/RTS    
 ;----------------------    
     CMP.L   #$4,D2
     BNE     CASE2
-    JSR     NOP_MOVEM_LEA_CLR_JSR_RTS_
-    JMP     MOVENEXT
+    JMP     NOP_MOVEM_LEA_CLR_JSR_RTS_
 ;----------------------
 
 
@@ -512,6 +508,7 @@ MOVENEXT
     CMPA.L  END_ADDR,A2
     BGT     TERMINATE
     JSR     CLEAR_VARS
+    JSR     RESET_ADDRESSING
     JMP     TESTLOOP
     
 NOP_MOVEM_LEA_CLR_JSR_RTS_
@@ -545,7 +542,7 @@ NOP_MOVEM_LEA_CLR_JSR_RTS_
     CMPI.B  #$6,D2
     BEQ     MOVEM_    
     
-    BEQ     SHOW_ERROR
+    BRA     PRINT_DATA
     
 CLR_
     MOVE.B  #$2,SIZETYPE 
@@ -564,6 +561,10 @@ CLR_
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
     
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_CLR
 
 JSR_
@@ -577,12 +578,24 @@ JSR_
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
     
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_JSR 
 
 RTS_
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA    PRINT_RTS
     
 NOP_
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA    PRINT_NOP
    
 LEA_
@@ -602,6 +615,11 @@ LEA_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_LEA
 MOVEM_
     JSR     CLEAR_REGS
@@ -627,6 +645,11 @@ MOVEM_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_MOVEM
 REGISTER_TO_MEMORY
     JSR     CLEAR_REGS
@@ -638,6 +661,11 @@ REGISTER_TO_MEMORY
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_MOVEM    
 MOVE_MOVEA_
     MOVE.B  #$1,SIZETYPE                     ;BOOKMARK
@@ -667,6 +695,10 @@ MOVE_MOVEA_
     MOVE.B  D2,SOURCE_REG   * Get source register
     JSR     CLEAR_REGS
     
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     CMP.B   #$1,DESTINATION_MODE * determine if MOVE or MOVEA
     BEQ     PRINT_MOVEA
     BRA     PRINT_MOVE
@@ -681,6 +713,11 @@ MOVEQ_
     
     MOVE.B  #$7,SOURCE_MODE
     MOVE.B  #$4,SOURCE_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_MOVEQ
 ADD_ADDA_    
     JSR     CLEAR_REGS
@@ -713,6 +750,11 @@ ADD_ADDA_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_ADD
 TO_DATA_ADD
     JSR     CLEAR_REGS
@@ -730,6 +772,11 @@ TO_DATA_ADD
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_ADD
 
 ADDA_
@@ -754,6 +801,11 @@ ADDA_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_ADDA
 ADDI_
     MOVE.B  #$2,SIZETYPE
@@ -774,6 +826,11 @@ ADDI_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_ADDI
 ADDQ_
     MOVE.B  #$2,SIZETYPE
@@ -795,6 +852,11 @@ ADDQ_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_ADDQ
 SUB_
     MOVE.B  #$2,SIZETYPE
@@ -825,6 +887,11 @@ SUB_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_SUB
 TO_DATA_SUB
     JSR     CLEAR_REGS
@@ -842,6 +909,11 @@ TO_DATA_SUB
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_SUB
 MULS_AND_
     JSR     CLEAR_REGS
@@ -876,6 +948,11 @@ MULS_AND_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_AND
     
 TO_DATA_AND
@@ -894,6 +971,11 @@ TO_DATA_AND
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_AND
 MULS_
     MOVE.B  #$2,SIZETYPE
@@ -913,6 +995,11 @@ MULS_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_MULS
 OR_DIVU_
     JSR     CLEAR_REGS
@@ -946,6 +1033,11 @@ OR_DIVU_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_OR
     
 TO_DATA_OR
@@ -964,6 +1056,11 @@ TO_DATA_OR
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_OR 
 DIVU_
     MOVE.B  #$2,SIZETYPE
@@ -983,6 +1080,11 @@ DIVU_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_DIVU
 
 LSd_ASd_ROd_
@@ -1029,6 +1131,10 @@ CONTINUE_LSd_ASd_ROd_
     MOVE.W  (A2),D2
     JSR     BITS_12_13
     
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     CMPI.B  #$0,D2
     BEQ     PRINT_ASD
     CMPI.B  #$1,D2
@@ -1052,6 +1158,10 @@ LSd_ASd_ROd_1
     JSR     BITS_14_16
     MOVE.B  D2,DESTINATION_REG
     
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     JSR     CLEAR_REGS   * Go to correct printing 
     MOVE.W  (A2),D2    
     JSR     BITS_5_7
@@ -1062,7 +1172,7 @@ LSd_ASd_ROd_1
     CMPI.B  #$3,D2
     BEQ     PRINT_ROD1
     
-    BEQ     SHOW_ERROR
+    BRA     PRINT_DATA
 CMP_
     MOVE.B  #$2,SIZETYPE
     JSR     CLEAR_REGS
@@ -1085,6 +1195,11 @@ CMP_
     MOVE.W  (A2),D2
     JSR     BITS_14_16
     MOVE.B  D2,SOURCE_REG
+    
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_CMP 
 BCC_
     MOVE.B  #$4,SIZETYPE
@@ -1099,11 +1214,59 @@ BCC_
     JSR     BITS_9_16
     MOVE.B  D2,DISPLACEMENT
     
+    JSR     INVALID_ADDRESSING
+    CMPI.B  #$01,INVALID_COUNTER
+    BEQ     PRINT_DATA
+    
     BRA     PRINT_Bcc
     
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
 
+RESET_ADDRESSING
+    MOVE.B  #$00,SOURCE_MODE
+    MOVE.B  #$00,SOURCE_REG
+    MOVE.B  #$00,DESTINATION_MODE
+    MOVE.B  #$00,DESTINATION_REG
+    RTS
+
+INVALID_ADDRESSING
+    CMPI.B  #$5,SOURCE_MODE
+    BEQ     SET_INVALID_COUNTER
+    CMPI.B  #$6,SOURCE_MODE
+    BEQ     SET_INVALID_COUNTER
+    CMPI.B  #$7,SOURCE_MODE
+    BEQ     CHECK_INVALID_SOURCE
+    
+    CMPI.B  #$5,DESTINATION_MODE
+    BEQ     SET_INVALID_COUNTER
+    CMPI.B  #$6,DESTINATION_MODE
+    BEQ     SET_INVALID_COUNTER
+    CMPI.B  #$7,DESTINATION_MODE
+    BEQ     CHECK_INVALID_DESTINATION
+    
+    BRA     RESET_INVALID_COUNTER
+    
+CHECK_INVALID_SOURCE
+    CMPI.B  #$2,SOURCE_REG
+    BEQ     SET_INVALID_COUNTER
+    CMPI.B  #$3,SOURCE_REG
+    BEQ     SET_INVALID_COUNTER
+    BRA     RESET_INVALID_COUNTER
+    
+CHECK_INVALID_DESTINATION
+    CMPI.B  #$2,DESTINATION_REG
+    BEQ     SET_INVALID_COUNTER
+    CMPI.B  #$3,DESTINATION_REG
+    BEQ     SET_INVALID_COUNTER
+    BRA     RESET_INVALID_COUNTER
+   
+SET_INVALID_COUNTER
+    MOVE.B  #$01,INVALID_COUNTER
+    RTS
+RESET_INVALID_COUNTER
+    MOVE.B  #$00,INVALID_COUNTER
+    RTS
                                           ;Op-Code SUBROUTINES
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
@@ -2779,6 +2942,7 @@ CURRENT_ADDR            DS.L    1
 OUTPUT_COUNTER          DS.B    1
 CONDITION               DS.B    1
 DISPLACEMENT            DS.B    1
+INVALID_COUNTER         DS.B    1
 
 
 START_ADDR              DS.L    1
@@ -2875,6 +3039,9 @@ ASCII_HEX
 
 
     END    START        ; last line of source
+
+
+
 
 
 
