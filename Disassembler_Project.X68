@@ -1,6 +1,6 @@
 *-----------------------------------------------------------
 * Title      : NULL TERMINATORS "I'LL GET IT BACK, BABY" DISASSEMBLER
-* Written by : Reza, Eduard, Eric
+* Written by : Reza Naeemi, Eduard Ordukhanov, and Eric Kinney
 * Date       : Sometime in the future, but now back in the present
 * Description: Taking back op-code from Skynet, one byte at a time
 *----------------------------------------------------------- 
@@ -119,7 +119,7 @@ MAX_ADDR					EQU	$000FFFFF
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////
 ***************************************************************************************************
-    INCLUDE comprehensive_test_FINAL.X68
+    INCLUDE extensive_test_FINAL.X68
     ORG    $1000
 START:
     MEMORY READ  $006000,$0060EF
